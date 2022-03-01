@@ -26,7 +26,6 @@ import com.dtstack.taier.common.enums.DictType;
 import com.dtstack.taier.common.enums.EComponentType;
 import com.dtstack.taier.common.enums.EScheduleJobType;
 import com.dtstack.taier.common.enums.EngineCatalogueType;
-import com.dtstack.taier.common.enums.ReadWriteLockType;
 import com.dtstack.taier.common.exception.ErrorCode;
 import com.dtstack.taier.common.exception.RdosDefineException;
 import com.dtstack.taier.dao.domain.BatchCatalogue;
@@ -37,7 +36,6 @@ import com.dtstack.taier.dao.domain.Dict;
 import com.dtstack.taier.dao.mapper.DevelopCatalogueDao;
 import com.dtstack.taier.develop.dto.devlop.BatchCatalogueVO;
 import com.dtstack.taier.develop.dto.devlop.CatalogueVO;
-import com.dtstack.taier.develop.dto.devlop.ReadWriteLockVO;
 import com.dtstack.taier.develop.dto.devlop.TaskResourceParam;
 import com.dtstack.taier.develop.enums.develop.RdosBatchCatalogueTypeEnum;
 import com.dtstack.taier.develop.enums.develop.TemplateCatalogue;
@@ -68,11 +66,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-
-/**
- * @author sishu.yss、toutian
- */
-
 @Service
 public class BatchCatalogueService {
 
@@ -98,10 +91,6 @@ public class BatchCatalogueService {
 
     @Autowired
     public BatchTaskTemplateService batchTaskTemplateService;
-
-    @Autowired
-    private ReadWriteLockService readWriteLockService;
-
 
     private static final String FUNCTION_MANAGER_NAME = "函数管理";
 
@@ -131,6 +120,7 @@ public class BatchCatalogueService {
 
     /**
      * 新增 and 修改目录
+     *
      * @param catalogue
      * @return
      */
@@ -157,7 +147,7 @@ public class BatchCatalogueService {
             throw new RdosDefineException(ErrorCode.SUBDIRECTORY_OR_FILE_AMOUNT_RESTRICTIONS);
         }
 
-        int parentCatalogueLevel = catalogue.getNodePid() == 0L ? 0 : this.isOverLevelLimit(catalogue.getNodePid());
+        int parentCatalogueLevel = catalogue.getNodePid() == 0L ? 0 : isOverLevelLimit(catalogue.getNodePid());
 
         catalogue.setLevel(parentCatalogueLevel + 1);
         catalogue.setCreateUserId(catalogue.getCreateUserId());
@@ -182,6 +172,7 @@ public class BatchCatalogueService {
 
     /**
      * 新增 and 修改目录
+     *
      * @param batchCatalogue
      * @return
      */
@@ -191,12 +182,12 @@ public class BatchCatalogueService {
         } else {
             developCatalogueDao.insert(batchCatalogue);
         }
-
         return batchCatalogue;
     }
 
     /**
      * 绑定租户时，初始化目录信息
+     *
      * @param tenantId
      * @param userId
      * @param componentVOS 根据控制台配置的组件信息，初始化相应的目录
@@ -207,7 +198,7 @@ public class BatchCatalogueService {
         List<Dict> zeroBatchCatalogueDictList = dictService.listByDictType(DictType.DATA_DEVELOP_CATALOGUE);
         List<Integer> componentTypes = componentVOS.stream().map(ComponentVO::getComponentTypeCode).collect(Collectors.toList());
         //根据控制台配置的组件信息，获取需要初始化的 1 级目录，任务开发、SparkSQL、资源管理 等
-        List<Dict> oneBatchCatalogueDictList = this.initCatalogueDictLevelByEngineType(componentTypes);
+        List<Dict> oneBatchCatalogueDictList = initCatalogueDictLevelByEngineType(componentTypes);
 
         Map<String, Set<String>> oneCatalogueValueAndNameMapping = oneBatchCatalogueDictList.stream()
                 .collect(Collectors.groupingBy(Dict::getDictValue, Collectors.mapping(Dict::getDictDesc, Collectors.toSet())));
@@ -245,6 +236,7 @@ public class BatchCatalogueService {
 
     /**
      * 根据控制台配置的组件信息，获取需要初始化的 1 级目录，任务开发、SparkSQL、资源管理 等
+     *
      * @param componentType
      * @return
      */
@@ -266,7 +258,8 @@ public class BatchCatalogueService {
 
 
     /**
-     *  初始化函数相关的二级菜单，系统函数目录 和 自定义函数目录
+     * 初始化函数相关的二级菜单，系统函数目录 和 自定义函数目录
+     *
      * @param tenantId
      * @param userId
      * @param name
@@ -295,6 +288,7 @@ public class BatchCatalogueService {
 
     /**
      * 校验是否初始化Spark SQL函数
+     *
      * @param name
      * @return
      */
@@ -305,6 +299,7 @@ public class BatchCatalogueService {
 
     /**
      * 初始化任务开发下的 模板目录 和 模板任务
+     *
      * @param oneCatalogue
      * @param tenantId
      * @param userId
@@ -379,6 +374,7 @@ public class BatchCatalogueService {
 
     /**
      * 根据当前节点递归查询所有父节点列表，包含当前节点
+     *
      * @param currentId
      * @param ids
      * @return
@@ -390,6 +386,7 @@ public class BatchCatalogueService {
 
     /**
      * 根据当前节点递归查询所有父节点列表
+     *
      * @param currentId
      * @param ids
      * @return 父节点列表
@@ -405,6 +402,7 @@ public class BatchCatalogueService {
 
     /**
      * 条件查询目录
+     *
      * @param isGetFile
      * @param nodePid
      * @param catalogueType
@@ -452,12 +450,12 @@ public class BatchCatalogueService {
             int parentLevel = this.isOverLevelLimit(catalogueInput.getNodePid());
             updateCatalogue.setLevel(parentLevel + 1);
             updateCatalogue.setNodePid(catalogueInput.getNodePid());
-        }else {
+        } else {
             updateCatalogue.setNodePid(catalogue.getNodePid());
         }
         //判断移动的目录下 有没有相同名称的文件夹
-        BatchCatalogue byLevelAndPIdAndTenantIdAndName = developCatalogueDao.getBeanByTenantIdAndNameAndParentId(catalogue.getTenantId(),updateCatalogue.getNodeName(), updateCatalogue.getNodePid());
-        if (byLevelAndPIdAndTenantIdAndName != null && (!byLevelAndPIdAndTenantIdAndName.getId().equals(catalogue.getId()))){
+        BatchCatalogue byLevelAndPIdAndTenantIdAndName = developCatalogueDao.getBeanByTenantIdAndNameAndParentId(catalogue.getTenantId(), updateCatalogue.getNodeName(), updateCatalogue.getNodePid());
+        if (byLevelAndPIdAndTenantIdAndName != null && (!byLevelAndPIdAndTenantIdAndName.getId().equals(catalogue.getId()))) {
             throw new RdosDefineException(ErrorCode.FILE_NAME_REPETITION);
         }
         updateCatalogue.setGmtModified(Timestamp.valueOf(LocalDateTime.now()));
@@ -531,6 +529,7 @@ public class BatchCatalogueService {
 
     /**
      * 获取 租户 下的 0 级目录极其子目录
+     *
      * @param tenantId
      * @return
      */
@@ -559,7 +558,7 @@ public class BatchCatalogueService {
             if (FUNCTION_MANAGER_NAME.equals(zeroCatalogue.getNodeName())) {
                 //如果是函数目录，默认添加上系统函数目录
                 BatchCatalogue systemFuncCatalogue = developCatalogueDao.getSystemFunctionCatalogueOne(EngineCatalogueType.SPARK.getType());
-                if (systemFuncCatalogue != null ) {
+                if (systemFuncCatalogue != null) {
                     oneChildCatalogues.add(systemFuncCatalogue);
                 }
             }
@@ -584,7 +583,7 @@ public class BatchCatalogueService {
     /**
      * 获得当前节点的子节点信息，包括子孙文件夹和子孙文件
      *
-     * @param tenantId   租户id
+     * @param tenantId  租户id
      * @param isGetFile
      * @param userId
      * @return
@@ -615,7 +614,6 @@ public class BatchCatalogueService {
                 taskList.sort(Comparator.comparing(BatchTask::getName));
                 if (CollectionUtils.isNotEmpty(taskList)) {
                     List<Long> taskIds = taskList.stream().map(BatchTask::getId).collect(Collectors.toList());
-                    Map<Long, ReadWriteLockVO> readWriteLockIdAndVOMap = getReadWriteLockVOMap(tenantId, taskIds, userId, userIdAndNameMap);
 
                     //遍历目录下的所有任务
                     for (BatchTask task : taskList) {
@@ -625,15 +623,6 @@ public class BatchCatalogueService {
                         childCatalogueTask.setLevel(currentCatalogueVO.getLevel() + 1);
                         childCatalogueTask.setParentId(currentCatalogueVO.getId());
                         childCatalogueTask.setCreateUser(getUserNameInMemory(userIdAndNameMap, task.getCreateUserId()));
-
-                        //设置任务的读写锁信息
-                        ReadWriteLockVO readWriteLockVO = readWriteLockIdAndVOMap.get(task.getId());
-                        if (readWriteLockVO.getLastKeepLockUserName() == null) {
-                            readWriteLockVO.setLastKeepLockUserName(getUserNameInMemory(userIdAndNameMap, task.getModifyUserId()));
-                            readWriteLockVO.setGmtModified(task.getGmtModified());
-                        }
-                        childCatalogueTask.setReadWriteLockVO(readWriteLockVO);
-
                         catalogueChildFileList.add(childCatalogueTask);
                     }
                 }
@@ -695,6 +684,7 @@ public class BatchCatalogueService {
 
     /**
      * 如果是libraSQL 或者是sparkSQl下的function  需要替换child 的catalogueType
+     *
      * @param catalogue
      * @param cv
      * @param currentCatalogueVO
@@ -721,33 +711,9 @@ public class BatchCatalogueService {
 
     }
 
-
-    /**
-     * 获取目录下任务的锁信息
-     * @param tenantId
-     * @param taskIds
-     * @param userId
-     * @param names
-     * @return
-     */
-    private Map<Long, ReadWriteLockVO> getReadWriteLockVOMap(Long tenantId, List<Long> taskIds, Long userId, Map<Long, String> names) {
-        Map<Long, ReadWriteLockVO> vos = Maps.newHashMap();
-        //一次查询800条
-        int num = taskIds.size() % 800 == 0 ? taskIds.size() / 800 : taskIds.size() / 800 + 1;
-        for (int i = 0; i < num; i++) {
-            int begin = i * 800;
-            int end = (i + 1) * 800;
-            if (i == num - 1) {
-                end = taskIds.size();
-            }
-            vos.putAll(readWriteLockService.getLocks(tenantId, ReadWriteLockType.BATCH_TASK, taskIds.subList(begin, end), userId, names));
-        }
-        return vos;
-    }
-
-
     /**
      * 设置用户名称
+     *
      * @param names
      * @param userId
      * @return
@@ -800,6 +766,7 @@ public class BatchCatalogueService {
 
     /**
      * 根据目录类型，获取目录的子目录信息
+     *
      * @param catalogueId
      * @param catalogueType
      * @param tenantId
@@ -815,6 +782,7 @@ public class BatchCatalogueService {
 
     /**
      * 根据目录类型查询对应的函数根目录
+     *
      * @param catalogueId
      * @param catalogueType
      * @param childCatalogues
@@ -841,6 +809,7 @@ public class BatchCatalogueService {
 
     /**
      * 判断是否可以移动到当前目录
+     *
      * @param catalogueId
      * @param catalogueNodePid
      * @return
@@ -853,6 +822,7 @@ public class BatchCatalogueService {
 
     /**
      * 根据 目录Id 查询目录信息
+     *
      * @param nodePid
      * @return
      */

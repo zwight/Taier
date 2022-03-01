@@ -38,9 +38,6 @@ public class CatalogueResultVO {
     @ApiModelProperty(value = "目录层级", example = "3")
     private Integer level;
 
-    @ApiModelProperty(value = "引擎类型", example = "1")
-    private Integer engineType;
-
     @ApiModelProperty(value = "序号", example = "2")
     private Integer orderVal;
 
@@ -52,9 +49,6 @@ public class CatalogueResultVO {
 
     @ApiModelProperty(value = "租户 ID", example = "")
     private Long tenantId;
-
-    @ApiModelProperty(value = "项目 ID", example = "")
-    private Long projectId;
 
     @ApiModelProperty(value = "平台类别", example = "1")
     private Integer appType;
@@ -100,14 +94,6 @@ public class CatalogueResultVO {
         this.level = level;
     }
 
-    public Integer getEngineType() {
-        return engineType;
-    }
-
-    public void setEngineType(Integer engineType) {
-        this.engineType = engineType;
-    }
-
     public Integer getOrderVal() {
         return orderVal;
     }
@@ -138,14 +124,6 @@ public class CatalogueResultVO {
 
     public void setTenantId(Long tenantId) {
         this.tenantId = tenantId;
-    }
-
-    public Long getProjectId() {
-        return projectId;
-    }
-
-    public void setProjectId(Long projectId) {
-        this.projectId = projectId;
     }
 
     public Integer getAppType() {

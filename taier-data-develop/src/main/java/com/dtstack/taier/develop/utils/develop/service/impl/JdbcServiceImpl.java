@@ -40,18 +40,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-/**
- * @author chener
- * @Classname JdbcServiceImpl
- * @Description Jdbc 实现类
- * @Date 2020/5/20 14:31
- * @Created chener@dtstack.com
- */
 @Service
 public class JdbcServiceImpl implements IJdbcService {
+
     protected static final Logger LOGGER = LoggerFactory.getLogger(JdbcServiceImpl.class);
 
-    
     @Override
     public Connection getConnection(Long tenantId, Long userId, EScheduleJobType eScheduleJobType, String dbName) {
         return getConnection(tenantId, userId, eScheduleJobType, dbName,null);

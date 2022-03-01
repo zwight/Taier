@@ -36,8 +36,6 @@ public class ScheduleDetailsVO {
 
     private Integer appType;
 
-    private String projectName;
-
     private Integer taskRule;
 
     private Integer scheduleStatus;
@@ -78,14 +76,6 @@ public class ScheduleDetailsVO {
 
     public void setAppType(Integer appType) {
         this.appType = appType;
-    }
-
-    public String getProjectName() {
-        return projectName;
-    }
-
-    public void setProjectName(String projectName) {
-        this.projectName = projectName;
     }
 
     public Integer getTaskRule() {

@@ -22,12 +22,6 @@ import com.dtstack.taier.common.param.DtInsightAuthParam;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
-/**
- * 返回切分键需要的列名
- *
- * @author Ruomu[ruomu@dtstack.com]
- * @Data 2021/1/12 17:19
- */
 @ApiModel("数据同步-返回切分键需要的列名")
 public class BatchDataSourceColumnForSyncopateVO extends DtInsightAuthParam {
 

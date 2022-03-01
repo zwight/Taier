@@ -28,12 +28,6 @@ public class BatchServerGetLogByAppTypeVO extends DtInsightAuthParam {
     @ApiModelProperty(value = "任务实例ID", example = "1", required = true)
     private String jobId;
 
-    @ApiModelProperty(hidden = true)
-    private Long tenantId;
-
-    @ApiModelProperty(hidden = true)
-    private Long projectId;
-
     @ApiModelProperty(value = "任务类型", example = "1", required = true)
     private Integer taskType;
 
@@ -46,24 +40,6 @@ public class BatchServerGetLogByAppTypeVO extends DtInsightAuthParam {
 
     public void setJobId(String jobId) {
         this.jobId = jobId;
-    }
-
-    @Override
-    public Long getTenantId() {
-        return tenantId;
-    }
-
-    @Override
-    public void setTenantId(Long tenantId) {
-        this.tenantId = tenantId;
-    }
-
-    public Long getProjectId() {
-        return projectId;
-    }
-
-    public void setProjectId(Long projectId) {
-        this.projectId = projectId;
     }
 
     public Integer getTaskType() {

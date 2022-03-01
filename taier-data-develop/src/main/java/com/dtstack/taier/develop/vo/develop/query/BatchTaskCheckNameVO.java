@@ -38,7 +38,7 @@ public class BatchTaskCheckNameVO extends DtInsightAuthParam {
     private Integer isFile;
 
     @ApiModelProperty(value = "项目 ID", hidden = true)
-    private Long projectId;
+    private Long tenantId;
 
     public String getName() {
         return name;
@@ -72,11 +72,4 @@ public class BatchTaskCheckNameVO extends DtInsightAuthParam {
         this.isFile = isFile;
     }
 
-    public Long getProjectId() {
-        return projectId;
-    }
-
-    public void setProjectId(Long projectId) {
-        this.projectId = projectId;
-    }
 }

@@ -37,7 +37,7 @@ public class DevelopTenantComponentService {
     @Autowired
     private DevelopTenantComponentDao developTenantComponentDao;
 
-    public TenantComponent getByTenantAndEngineType(Long tenantId, Integer taskType) {
+    public TenantComponent getByTenantAndTaskType(Long tenantId, Integer taskType) {
         return developTenantComponentDao.getByTenantAndTaskType(tenantId, taskType);
     }
 

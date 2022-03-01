@@ -30,24 +30,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-/**
- * @author jiangbo
- */
 @Service
 public class HiveSqlBuildService implements ISqlBuildService {
-
-    public String buildAddColumnSql(String tableName, List<ColumnDTO> columns) {
-        StringBuilder sqlBuilder = new StringBuilder();
-        sqlBuilder.append("alter table ").append(tableName).append(" add columns (");
-        List<String> strings = buildColumnsSql(columns, true);
-        for (int i=0;i<strings.size();i++){
-            sqlBuilder.append(strings.get(i));
-            if (i<strings.size()-1){
-                sqlBuilder.append(",");
-            }
-        }
-        return sqlBuilder.append(")").toString();
-    }
 
     @Override
     public String buildCreateSql(TableDTO createTableDTO){

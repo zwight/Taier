@@ -62,9 +62,6 @@ public class BatchTaskResourceParamVO extends DtInsightAuthParam {
     @ApiModelProperty(value = "锁版本 ID", example = "1")
     private Integer lockVersion = 0;
 
-    @ApiModelProperty(value = "是否覆盖更新", example = "false")
-    private Boolean forceUpdate = false;
-
     @ApiModelProperty(value = "任务版本 ID")
     private List<Map> taskVariables;
 
@@ -83,9 +80,6 @@ public class BatchTaskResourceParamVO extends DtInsightAuthParam {
     @ApiModelProperty(value = "2-python2.x,3-python3.xD", example = "2")
     private Integer pythonVersion = 0;
 
-    @ApiModelProperty(value = "0-TensorFlow,1-MXNet", example = "1")
-    private Integer learningType = 0;
-
     @ApiModelProperty(value = "输入数据文件的路径", example = "")
     private String input;
 
@@ -101,12 +95,6 @@ public class BatchTaskResourceParamVO extends DtInsightAuthParam {
     @ApiModelProperty(value = "是否是右键编辑任务", example = "false")
     private Boolean isEditBaseInfo = false;
 
-    @ApiModelProperty(value = "工作流父任务版本号  用于子任务获取父任务锁", example = "43")
-    private Integer parentReadWriteLockVersion ;
-
-    @ApiModelProperty(value = "读写锁", example = "")
-    private BatchReadWriteLockBaseVO readWriteLockVO;
-
     @ApiModelProperty(value = "任务名称", example = "test")
     private String name;
 
@@ -115,9 +103,6 @@ public class BatchTaskResourceParamVO extends DtInsightAuthParam {
 
     @ApiModelProperty(value = "计算类型 0实时，1 离线", example = "1", required = true)
     private Integer computeType;
-
-    @ApiModelProperty(value = "执行引擎类型 0 flink, 1 spark", example = "1")
-    private Integer engineType;
 
     @ApiModelProperty(value = "sql 文本", example = "show tables", required = true)
     private String sqlText;
@@ -146,9 +131,6 @@ public class BatchTaskResourceParamVO extends DtInsightAuthParam {
     @ApiModelProperty(value = "新建task的用户", example = "3")
     private Long createUserId;
     
-    @ApiModelProperty(value = "负责人id", example = "111")
-    private Long ownerUserId;
-    
     @ApiModelProperty(value = "任务版本 ID", example = "14")
     private Integer version;
 
@@ -172,9 +154,6 @@ public class BatchTaskResourceParamVO extends DtInsightAuthParam {
 
     @ApiModelProperty(value = "租户 ID", hidden = true)
     private Long tenantId;
-
-    @ApiModelProperty(value = "项目 ID",  hidden = true)
-    private Long projectId;
    
     @ApiModelProperty(value = "平台类别", hidden = true)
     private Integer appType;
@@ -284,14 +263,6 @@ public class BatchTaskResourceParamVO extends DtInsightAuthParam {
         this.lockVersion = lockVersion;
     }
 
-    public Boolean getForceUpdate() {
-        return forceUpdate;
-    }
-
-    public void setForceUpdate(Boolean forceUpdate) {
-        this.forceUpdate = forceUpdate;
-    }
-
     public List<Map> getTaskVariables() {
         return taskVariables;
     }
@@ -340,14 +311,6 @@ public class BatchTaskResourceParamVO extends DtInsightAuthParam {
         this.pythonVersion = pythonVersion;
     }
 
-    public Integer getLearningType() {
-        return learningType;
-    }
-
-    public void setLearningType(Integer learningType) {
-        this.learningType = learningType;
-    }
-
     public String getInput() {
         return input;
     }
@@ -388,22 +351,6 @@ public class BatchTaskResourceParamVO extends DtInsightAuthParam {
         isEditBaseInfo = editBaseInfo;
     }
 
-    public Integer getParentReadWriteLockVersion() {
-        return parentReadWriteLockVersion;
-    }
-
-    public void setParentReadWriteLockVersion(Integer parentReadWriteLockVersion) {
-        this.parentReadWriteLockVersion = parentReadWriteLockVersion;
-    }
-
-    public BatchReadWriteLockBaseVO getReadWriteLockVO() {
-        return readWriteLockVO;
-    }
-
-    public void setReadWriteLockVO(BatchReadWriteLockBaseVO readWriteLockVO) {
-        this.readWriteLockVO = readWriteLockVO;
-    }
-
     public String getName() {
         return name;
     }
@@ -426,14 +373,6 @@ public class BatchTaskResourceParamVO extends DtInsightAuthParam {
 
     public void setComputeType(Integer computeType) {
         this.computeType = computeType;
-    }
-
-    public Integer getEngineType() {
-        return engineType;
-    }
-
-    public void setEngineType(Integer engineType) {
-        this.engineType = engineType;
     }
 
     public String getSqlText() {
@@ -508,14 +447,6 @@ public class BatchTaskResourceParamVO extends DtInsightAuthParam {
         this.createUserId = createUserId;
     }
 
-    public Long getOwnerUserId() {
-        return ownerUserId;
-    }
-
-    public void setOwnerUserId(Long ownerUserId) {
-        this.ownerUserId = ownerUserId;
-    }
-
     public Integer getVersion() {
         return version;
     }
@@ -580,14 +511,6 @@ public class BatchTaskResourceParamVO extends DtInsightAuthParam {
     @Override
     public void setTenantId(Long tenantId) {
         this.tenantId = tenantId;
-    }
-
-    public Long getProjectId() {
-        return projectId;
-    }
-
-    public void setProjectId(Long projectId) {
-        this.projectId = projectId;
     }
 
     public Integer getAppType() {

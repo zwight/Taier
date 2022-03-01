@@ -18,13 +18,6 @@
 
 package com.dtstack.taier.develop.dto.devlop;
 
-
-/**
- * @company：dtstack.com
- * @author yunliu
- * @date 2020-04-28 15:43
- * @description 解析sql返回的参数
- */
 public class BuildSqlVO {
 
     /**
@@ -58,11 +51,6 @@ public class BuildSqlVO {
     private Long tenantId;
 
     /**
-     * 项目id
-     */
-    private Long projectId;
-
-    /**
      * 原本的sql
      */
     private String originSql;
@@ -74,10 +62,6 @@ public class BuildSqlVO {
      * 解析出来的列名
      */
     private String parsedColumns;
-    /**
-     * 引擎类型
-     */
-    private Integer engineType = 0;
 
     public String getJobId() {
         return jobId;
@@ -127,14 +111,6 @@ public class BuildSqlVO {
         this.tenantId = tenantId;
     }
 
-    public Long getProjectId() {
-        return projectId;
-    }
-
-    public void setProjectId(Long projectId) {
-        this.projectId = projectId;
-    }
-
     public String getOriginSql() {
         return originSql;
     }
@@ -159,11 +135,4 @@ public class BuildSqlVO {
         this.parsedColumns = parsedColumns;
     }
 
-    public Integer getEngineType() {
-        return engineType;
-    }
-
-    public void setEngineType(Integer engineType) {
-        this.engineType = engineType;
-    }
 }

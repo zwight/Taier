@@ -38,9 +38,6 @@ public class BatchJobFindTaskRuleJobResultVO {
     @ApiModelProperty(value = "产品类型", example = "1")
     private Integer appType;
 
-    @ApiModelProperty(value = "项目名称", example = "dev")
-    private String projectName;
-
     @ApiModelProperty(value = "规则类型", example = "0：无规则 1：弱规则 2：强规则")
     private Integer taskRule;
 
@@ -80,14 +77,6 @@ public class BatchJobFindTaskRuleJobResultVO {
 
     public void setAppType(Integer appType) {
         this.appType = appType;
-    }
-
-    public String getProjectName() {
-        return projectName;
-    }
-
-    public void setProjectName(String projectName) {
-        this.projectName = projectName;
     }
 
     public Integer getTaskRule() {

@@ -21,25 +21,16 @@ package com.dtstack.taier.develop.dto.devlop;
 import java.util.List;
 
 
-/**
- * @author yunliu
- * @date 2020-04-27 09:24
- * @description
- */
 public class ExecuteSqlParseVO {
-
 
     private String msg;
 
     private Integer status;
 
-
     /**
      * 发送到引擎生成的jobid
      */
-    private String  jobId;
-
-    private Integer engineType;
+    private String jobId;
 
     private String sqlText;
 
@@ -70,14 +61,6 @@ public class ExecuteSqlParseVO {
 
     public void setJobId(String jobId) {
         this.jobId = jobId;
-    }
-
-    public Integer getEngineType() {
-        return engineType;
-    }
-
-    public void setEngineType(Integer engineType) {
-        this.engineType = engineType;
     }
 
     public String getSqlText() {

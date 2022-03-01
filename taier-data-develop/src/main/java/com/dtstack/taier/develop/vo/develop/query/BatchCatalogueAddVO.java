@@ -46,9 +46,6 @@ public class BatchCatalogueAddVO {
     @ApiModelProperty(value = "创建用户id", example = "1")
     private Long createUserId;
 
-    @ApiModelProperty(value = "engine类型", example = "1", required = true)
-    private Integer engineType;
-
     @ApiModelProperty(value = "节点值", example = "1")
     private Integer orderVal;
 
@@ -118,14 +115,6 @@ public class BatchCatalogueAddVO {
 
     public void setCreateUserId(Long createUserId) {
         this.createUserId = createUserId;
-    }
-
-    public Integer getEngineType() {
-        return engineType;
-    }
-
-    public void setEngineType(Integer engineType) {
-        this.engineType = engineType;
     }
 
     public Integer getOrderVal() {

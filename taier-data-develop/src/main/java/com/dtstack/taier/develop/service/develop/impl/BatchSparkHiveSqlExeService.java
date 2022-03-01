@@ -281,13 +281,13 @@ public class BatchSparkHiveSqlExeService {
             result.setJobId(jobId);
         } else {
             if (!executeContent.isExecuteSqlLater()) {
-                TenantComponent tenantEngine = developTenantComponentService.getByTenantAndEngineType(executeContent.getTenantId(), executeContent.getTaskType());
-                Preconditions.checkNotNull(tenantEngine, "引擎不能为空");
+                TenantComponent tenantComponent = developTenantComponentService.getByTenantAndTaskType(executeContent.getTenantId(), executeContent.getTaskType());
+                Preconditions.checkNotNull(tenantComponent, "引擎不能为空");
                 if (SqlType.CREATE.equals(parseResult.getSqlType())
                         || SqlType.CREATE_LIKE.equals(parseResult.getSqlType())) {
-                    executeCreateTableSql(parseResult, tenantId, tenantEngine.getComponentIdentity().toLowerCase(), scheduleJobType);
+                    executeCreateTableSql(parseResult, tenantId, tenantComponent.getComponentIdentity().toLowerCase(), scheduleJobType);
                 } else {
-                    this.exeSqlDirect(executeContent, tenantId, parseResult, result, tenantEngine, dataSourceType);
+                    this.exeSqlDirect(executeContent, tenantId, parseResult, result, tenantComponent, dataSourceType);
                 }
             }
         }

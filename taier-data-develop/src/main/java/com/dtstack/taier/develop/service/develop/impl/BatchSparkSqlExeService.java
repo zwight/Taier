@@ -107,17 +107,17 @@ public class BatchSparkSqlExeService extends BatchSparkHiveSqlExeService impleme
 
             } else {
                 if (!executeContent.isExecuteSqlLater()) {
-                    TenantComponent tenantEngine = developTenantComponentService.getByTenantAndEngineType(executeContent.getTenantId(), executeContent.getTaskType());
-                    Preconditions.checkNotNull(tenantEngine, "引擎不能为空");
+                    TenantComponent tenantComponent = developTenantComponentService.getByTenantAndTaskType(executeContent.getTenantId(), executeContent.getTaskType());
+                    Preconditions.checkNotNull(tenantComponent, "引擎不能为空");
                     SqlResultVO<List<Object>> sqlResultVO = new SqlResultVO<>();
                     sqlResultVO.setSqlText(parseResult.getStandardSql());
                     sqlResultVO.setType(SqlTypeEnums.NO_SELECT_DATA.getType());
                     if (SqlType.CREATE.equals(parseResult.getSqlType())
                             || SqlType.CREATE_LIKE.equals(parseResult.getSqlType())) {
-                        executeCreateTableSql(parseResult, tenantId, tenantEngine.getComponentIdentity().toLowerCase(), EScheduleJobType.SPARK_SQL);
+                        executeCreateTableSql(parseResult, tenantId, tenantComponent.getComponentIdentity().toLowerCase(), EScheduleJobType.SPARK_SQL);
                         sqlIdList.add(sqlResultVO);
                     } else {
-                        exeSqlDirect(executeContent, tenantId, parseResult, result, tenantEngine, DataSourceType.Spark);
+                        exeSqlDirect(executeContent, tenantId, parseResult, result, tenantComponent, DataSourceType.Spark);
                         sqlResultVO.setResult(result.getResult());
                         sqlIdList.add(sqlResultVO);
                     }

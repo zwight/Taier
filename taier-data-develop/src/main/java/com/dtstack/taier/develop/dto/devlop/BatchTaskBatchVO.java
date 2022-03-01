@@ -33,9 +33,6 @@ import org.springframework.beans.BeanUtils;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Created by Administrator on 2017/5/9 0009.
- */
 public class BatchTaskBatchVO extends ScheduleTaskVO {
 
     private static final Logger LOG = LoggerFactory.getLogger(BatchTaskBatchVO.class);
@@ -132,9 +129,7 @@ public class BatchTaskBatchVO extends ScheduleTaskVO {
     private Integer taskPeriodId;
     private String taskPeriodType;
     private String nodePName;
-    private ReadWriteLockVO readWriteLockVO;
     private Long userId;
-    private Integer lockVersion;
     private List<Map> taskVariables;
 
     private Long dataSourceId;
@@ -159,11 +154,6 @@ public class BatchTaskBatchVO extends ScheduleTaskVO {
      * 2-python2.x,3-python3.x
      */
     private Integer pythonVersion = 0;
-
-    /**
-     * 0-TensorFlow,1-MXNet
-     */
-    private Integer learningType = 0;
 
     /**
      * 输入数据文件的路径
@@ -222,20 +212,6 @@ public class BatchTaskBatchVO extends ScheduleTaskVO {
 
     private List<BatchTaskVersionDetailDTO> taskVersions;
 
-    /**
-     * 工作流父任务版本号  用于子任务获取父任务锁
-     */
-    private Integer parentReadWriteLockVersion ;
-
-
-    public Integer getParentReadWriteLockVersion() {
-        return parentReadWriteLockVersion;
-    }
-
-    public void setParentReadWriteLockVersion(Integer parentReadWriteLockVersion) {
-        this.parentReadWriteLockVersion = parentReadWriteLockVersion;
-    }
-
     public void setVersion(Integer version) {
         this.version = version;
     }
@@ -244,7 +220,6 @@ public class BatchTaskBatchVO extends ScheduleTaskVO {
     public void setTaskId(Long taskId) {
         this.taskId = taskId;
     }
-
 
     @Override
     public String getTenantName() {
@@ -294,16 +269,6 @@ public class BatchTaskBatchVO extends ScheduleTaskVO {
     @Override
     public void setPythonVersion(int pythonVersion) {
         this.pythonVersion = pythonVersion;
-    }
-
-    @Override
-    public int getLearningType() {
-        return learningType;
-    }
-
-    @Override
-    public void setLearningType(int learningType) {
-        this.learningType = learningType;
     }
 
     @Override
@@ -404,26 +369,6 @@ public class BatchTaskBatchVO extends ScheduleTaskVO {
     public void setTaskVersions(List<BatchTaskVersionDetailDTO> taskVersions) {
         this.taskVersions = taskVersions;
     }
-
-
-    public ReadWriteLockVO getReadWriteLockVO() {
-        return readWriteLockVO;
-    }
-
-    public void setReadWriteLockVO(ReadWriteLockVO readWriteLockVO) {
-        this.readWriteLockVO = readWriteLockVO;
-    }
-
-    @Override
-    public Integer getLockVersion() {
-        return lockVersion;
-    }
-
-    @Override
-    public void setLockVersion(Integer lockVersion) {
-        this.lockVersion = lockVersion;
-    }
-
     @Override
     public Long getUserId() {
         return userId;

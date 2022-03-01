@@ -35,9 +35,6 @@ public class BatchScheduleTaskVO {
     @ApiModelProperty(value = "创建用户")
     private BatchUserResultVO modifyUser;
 
-    @ApiModelProperty(value = "所属用户")
-    private BatchUserResultVO ownerUser;
-
     @ApiModelProperty(value = "任务周期 ID", example = "1")
     protected Integer taskPeriodId;
 
@@ -71,9 +68,6 @@ public class BatchScheduleTaskVO {
     @ApiModelProperty(value = "租户名称", example = "dev租户")
     private String tenantName;
 
-    @ApiModelProperty(value = "项目名称", example = "dev开发")
-    private String projectName;
-
     @ApiModelProperty(value = "创建模式 0-向导模式，1-脚本模式", example = "0")
     private Integer createModel = 0;
 
@@ -82,9 +76,6 @@ public class BatchScheduleTaskVO {
 
     @ApiModelProperty(value = "python版本 2-python2.x,3-python3.x式", example = "2")
     private Integer pythonVersion = 0;
-
-    @ApiModelProperty(value = "0-TensorFlow,1-MXNet", example = "1")
-    private Integer learningType = 0;
 
     @ApiModelProperty(value = "输入数据文件的路径", example = "/usr/opt/a")
     private String input;
@@ -137,9 +128,6 @@ public class BatchScheduleTaskVO {
     @ApiModelProperty(value = "计算类型 0实时，1 离线", example = "1")
     private Integer computeType;
 
-    @ApiModelProperty(value = "执行引擎类型 0 flink, 1 spark", example = "1")
-    private Integer engineType;
-
     @ApiModelProperty(value = "sql 文本", example = "select * from test")
     private String sqlText;
 
@@ -167,9 +155,6 @@ public class BatchScheduleTaskVO {
     @ApiModelProperty(value = "新建task的用户", example = "3")
     private Long createUserId;
 
-    @ApiModelProperty(value = "负责人id", example = "3")
-    private Long ownerUserId;
-
     @ApiModelProperty(value = "节点 id", example = "13")
     private Long nodePid;
 
@@ -193,9 +178,6 @@ public class BatchScheduleTaskVO {
 
     @ApiModelProperty(value = "租户 ID", example = "3")
     private Long tenantId;
-
-    @ApiModelProperty(value = "项目 ID", example = "5")
-    private Long projectId;
 
     @ApiModelProperty(value = "主键 ID", example = "1")
     private Long id = 0L;
@@ -223,14 +205,6 @@ public class BatchScheduleTaskVO {
 
     public void setModifyUser(BatchUserResultVO modifyUser) {
         this.modifyUser = modifyUser;
-    }
-
-    public BatchUserResultVO getOwnerUser() {
-        return ownerUser;
-    }
-
-    public void setOwnerUser(BatchUserResultVO ownerUser) {
-        this.ownerUser = ownerUser;
     }
 
     public Integer getTaskPeriodId() {
@@ -321,14 +295,6 @@ public class BatchScheduleTaskVO {
         this.tenantName = tenantName;
     }
 
-    public String getProjectName() {
-        return projectName;
-    }
-
-    public void setProjectName(String projectName) {
-        this.projectName = projectName;
-    }
-
     public Integer getCreateModel() {
         return createModel;
     }
@@ -351,14 +317,6 @@ public class BatchScheduleTaskVO {
 
     public void setPythonVersion(Integer pythonVersion) {
         this.pythonVersion = pythonVersion;
-    }
-
-    public Integer getLearningType() {
-        return learningType;
-    }
-
-    public void setLearningType(Integer learningType) {
-        this.learningType = learningType;
     }
 
     public String getInput() {
@@ -497,14 +455,6 @@ public class BatchScheduleTaskVO {
         this.computeType = computeType;
     }
 
-    public Integer getEngineType() {
-        return engineType;
-    }
-
-    public void setEngineType(Integer engineType) {
-        this.engineType = engineType;
-    }
-
     public String getSqlText() {
         return sqlText;
     }
@@ -577,14 +527,6 @@ public class BatchScheduleTaskVO {
         this.createUserId = createUserId;
     }
 
-    public Long getOwnerUserId() {
-        return ownerUserId;
-    }
-
-    public void setOwnerUserId(Long ownerUserId) {
-        this.ownerUserId = ownerUserId;
-    }
-
     public Long getNodePid() {
         return nodePid;
     }
@@ -647,14 +589,6 @@ public class BatchScheduleTaskVO {
 
     public void setTenantId(Long tenantId) {
         this.tenantId = tenantId;
-    }
-
-    public Long getProjectId() {
-        return projectId;
-    }
-
-    public void setProjectId(Long projectId) {
-        this.projectId = projectId;
     }
 
     public Long getId() {

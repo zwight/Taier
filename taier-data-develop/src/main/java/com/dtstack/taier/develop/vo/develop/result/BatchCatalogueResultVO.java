@@ -58,9 +58,6 @@ public class BatchCatalogueResultVO {
     @ApiModelProperty(value = "子目录列表")
     private List<BatchCatalogueResultVO> children;
 
-    @ApiModelProperty(value = "读写锁")
-    private ReadWriteLockVO readWriteLockVO;
-
     @ApiModelProperty(value = "版本", example = "1")
     private Integer version;
 
@@ -70,17 +67,8 @@ public class BatchCatalogueResultVO {
     @ApiModelProperty(value = "python版本", example = "2")
     private Integer pythonVersion;
 
-    @ApiModelProperty(value = "learning类型", example = "1")
-    private Integer learningType;
-
-    @ApiModelProperty(value = "脚本类型", example = "1")
-    private Integer scriptType;
-
     @ApiModelProperty(value = "是否为子任务", example = "0")
     private Integer isSubTask = 0;
-
-    @ApiModelProperty(value = "engine类型", example = "1")
-    private Integer engineType;
 
     @ApiModelProperty(value = "任务状态", example = "1")
     private Integer status;
@@ -173,14 +161,6 @@ public class BatchCatalogueResultVO {
         this.children = children;
     }
 
-    public ReadWriteLockVO getReadWriteLockVO() {
-        return readWriteLockVO;
-    }
-
-    public void setReadWriteLockVO(ReadWriteLockVO readWriteLockVO) {
-        this.readWriteLockVO = readWriteLockVO;
-    }
-
     public Integer getVersion() {
         return version;
     }
@@ -205,36 +185,12 @@ public class BatchCatalogueResultVO {
         this.pythonVersion = pythonVersion;
     }
 
-    public Integer getLearningType() {
-        return learningType;
-    }
-
-    public void setLearningType(Integer learningType) {
-        this.learningType = learningType;
-    }
-
-    public Integer getScriptType() {
-        return scriptType;
-    }
-
-    public void setScriptType(Integer scriptType) {
-        this.scriptType = scriptType;
-    }
-
     public Integer getIsSubTask() {
         return isSubTask;
     }
 
     public void setIsSubTask(Integer isSubTask) {
         this.isSubTask = isSubTask;
-    }
-
-    public Integer getEngineType() {
-        return engineType;
-    }
-
-    public void setEngineType(Integer engineType) {
-        this.engineType = engineType;
     }
 
     public Integer getStatus() {

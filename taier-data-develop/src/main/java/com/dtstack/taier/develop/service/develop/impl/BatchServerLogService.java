@@ -107,8 +107,8 @@ public class BatchServerLogService {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    private static final String DOWNLOAD_LOG = "/taier/developDownload/downloadJobLog?jobId=%s&taskType=%s&projectId=%s";
-    private static final String DOWNLOAD_TYPE_LOG = "/taier/developDownload/downloadAppTypeLog?jobId=%s&logType=%s&projectId=%s";
+    private static final String DOWNLOAD_LOG = "/taier/developDownload/downloadJobLog?jobId=%s&taskType=%s";
+    private static final String DOWNLOAD_TYPE_LOG = "/taier/developDownload/downloadAppTypeLog?jobId=%s&logType=%s";
 
 
     private static final int SECOND_LENGTH = 10;
@@ -116,30 +116,28 @@ public class BatchServerLogService {
     private static final int MICRO_LENGTH = 16;
     private static final int NANOS_LENGTH = 19;
 
-
     public BatchServerLogVO getLogsByJobId(String jobId, Integer pageInfo) {
-
         if (StringUtils.isBlank(jobId)) {
             return null;
         }
 
-        final ScheduleJob job = scheduleJobService.getByJobId(jobId);
+        ScheduleJob job = scheduleJobService.getByJobId(jobId);
         if (Objects.isNull(job)) {
             LOGGER.info("can not find job by id:{}.", jobId);
             throw new RdosDefineException(ErrorCode.CAN_NOT_FIND_JOB);
         }
-        final Long tenantId = job.getTenantId();
+        Long tenantId = job.getTenantId();
 
-        final ScheduleTaskShade scheduleTaskShade = this.taskService.findTaskByTaskId(job.getTaskId());
+        ScheduleTaskShade scheduleTaskShade = taskService.findTaskByTaskId(job.getTaskId());
         if (Objects.isNull(scheduleTaskShade)) {
             LOGGER.info("can not find task shade  by jobId:{}.", jobId);
             throw new RdosDefineException(ErrorCode.SERVER_EXCEPTION);
         }
 
-        final BatchServerLogVO batchServerLogVO = new BatchServerLogVO();
+        BatchServerLogVO batchServerLogVO = new BatchServerLogVO();
 
         //日志从engine获取
-        final JSONObject logsBody = new JSONObject(2);
+        JSONObject logsBody = new JSONObject(2);
         logsBody.put("jobId", jobId);
         logsBody.put("computeType", ComputeType.BATCH.getType());
         ActionLogVO actionLogVO = actionService.log(jobId);
@@ -147,7 +145,7 @@ public class BatchServerLogService {
         if (!Strings.isNullOrEmpty(actionLogVO.getLogInfo())) {
             try {
                 info = JSON.parseObject(actionLogVO.getLogInfo());
-            } catch (final Exception e) {
+            } catch (Exception e) {
                 LOGGER.error(String.format("parse jobId： %s  logInfo：%s", jobId, actionLogVO.getLogInfo()), e);
                 info.put("msg_info", actionLogVO.getLogInfo());
             }
@@ -155,7 +153,7 @@ public class BatchServerLogService {
 
         if (Objects.nonNull(job.getVersionId())) {
             // 需要获取执行任务时候版本对应的sql
-            BatchTaskVersionDetailDTO taskVersion = this.batchTaskVersionService.getByVersionId((long) job.getVersionId());
+            BatchTaskVersionDetailDTO taskVersion = batchTaskVersionService.getByVersionId((long) job.getVersionId());
             if (Objects.nonNull(taskVersion)) {
                 if (StringUtils.isEmpty(taskVersion.getOriginSql())){
                     String jsonSql = StringUtils.isEmpty(taskVersion.getSqlText()) ? "{}" : taskVersion.getSqlText();
@@ -171,17 +169,17 @@ public class BatchServerLogService {
         if (EScheduleJobType.SPARK_SQL.getVal().equals(scheduleTaskShade.getTaskType())) {
             // 处理sql注释，先把注释base64编码，再处理非注释的自定义参数
             String sql = SqlFormatterUtil.dealAnnotationBefore(scheduleTaskShade.getSqlText());
-            final List<BatchTaskParamShade> taskParamsToReplace = this.batchTaskParamShadeService.getTaskParam(scheduleTaskShade.getId());
-            sql = this.jobParamReplace.paramReplace(sql, taskParamsToReplace, job.getCycTime());
+            List<BatchTaskParamShade> taskParamsToReplace = batchTaskParamShadeService.getTaskParam(scheduleTaskShade.getId());
+            sql = jobParamReplace.paramReplace(sql, taskParamsToReplace, job.getCycTime());
             sql = SqlFormatterUtil.dealAnnotationAfter(sql);
             info.put("sql", sql);
         } else if (EScheduleJobType.SYNC.getVal().equals(scheduleTaskShade.getTaskType())) {
-            final JSONObject jobJson;
+            JSONObject jobJson;
             //taskShade 需要解码
             JSONObject sqlJson = null;
             try {
                 sqlJson = JSON.parseObject(Base64Util.baseDecode(scheduleTaskShade.getSqlText()));
-            } catch (final Exception e) {
+            } catch (Exception e) {
                 sqlJson = JSON.parseObject(scheduleTaskShade.getSqlText());
             }
             jobJson = sqlJson.getJSONObject("job");
@@ -191,8 +189,8 @@ public class BatchServerLogService {
             DataFilter.passwordFilter(jobJson);
 
             String jobStr = jobJson.toJSONString();
-            final List<BatchTaskParamShade> taskParamsToReplace = this.batchTaskParamShadeService.getTaskParam(scheduleTaskShade.getId());
-            jobStr = this.jobParamReplace.paramReplace(jobStr, taskParamsToReplace, job.getCycTime());
+            List<BatchTaskParamShade> taskParamsToReplace = batchTaskParamShadeService.getTaskParam(scheduleTaskShade.getId());
+            jobStr = jobParamReplace.paramReplace(jobStr, taskParamsToReplace, job.getCycTime());
             info.put("sql", JsonUtils.formatJSON(jobStr));
             if (Objects.nonNull(job.getExecEndTime()) && Objects.nonNull(job.getExecStartTime())) {
                 List<ActionJobEntityVO> engineEntities = actionService.entitys(Collections.singletonList(logsBody.getString("jobId")));
@@ -200,15 +198,15 @@ public class BatchServerLogService {
                 if (CollectionUtils.isNotEmpty(engineEntities)) {
                     engineJobId =  engineEntities.get(0).getEngineJobId();
                 }
-                this.parseIncreInfo(info, jobStr, tenantId, engineJobId, job.getExecStartTime().getTime(), job.getExecEndTime().getTime(),"");
+                parseIncreInfo(info, jobStr, tenantId, engineJobId, job.getExecStartTime().getTime(), job.getExecEndTime().getTime(),"");
             }
         }
 
         if (job.getJobId() != null) {
             try {
                 if (StringUtils.isNotBlank(actionLogVO.getEngineLog())) {
-                    final Map<String, Object> engineLogMap = BatchServerLogService.objectMapper.readValue(actionLogVO.getEngineLog(), Map.class);
-                    this.dealPerfLog(engineLogMap);
+                    Map<String, Object> engineLogMap = BatchServerLogService.objectMapper.readValue(actionLogVO.getEngineLog(), Map.class);
+                    dealPerfLog(engineLogMap);
                     info.putAll(engineLogMap);
 
                     // 去掉统计信息，界面不展示，调度端统计使用
@@ -222,15 +220,15 @@ public class BatchServerLogService {
         }
 
         // 增加重试日志
-        final String retryLog = this.buildRetryLog(jobId, pageInfo, batchServerLogVO);
-        this.formatForLogInfo(info, job.getType(),scheduleTaskShade.getTaskType(), retryLog, null,
+        String retryLog = buildRetryLog(jobId, pageInfo, batchServerLogVO);
+        formatForLogInfo(info, job.getType(),scheduleTaskShade.getTaskType(), retryLog, null,
                 null, null, batchServerLogVO, tenantId,jobId);
 
         if (!scheduleTaskShade.getTaskType().equals(EScheduleJobType.SYNC.getVal())
                 && !scheduleTaskShade.getTaskType().equals(EScheduleJobType.VIRTUAL.getVal())
                 && !scheduleTaskShade.getTaskType().equals(EScheduleJobType.WORK_FLOW.getVal())
                 && TaskStatus.getStoppedStatus().contains(job.getStatus())) {
-            batchServerLogVO.setDownloadLog(String.format(DOWNLOAD_LOG, jobId, scheduleTaskShade.getTaskType(),0L));
+            batchServerLogVO.setDownloadLog(String.format(DOWNLOAD_LOG, jobId, scheduleTaskShade.getTaskType()));
         }
 
         batchServerLogVO.setName(scheduleTaskShade.getName());
@@ -246,7 +244,7 @@ public class BatchServerLogService {
      *
      * @param engineLogMap
      */
-    private void dealPerfLog(final Map<String, Object> engineLogMap) {
+    private void dealPerfLog(Map<String, Object> engineLogMap) {
 
         if (!engineLogMap.containsKey("perf")) {
             return;
@@ -254,12 +252,12 @@ public class BatchServerLogService {
 
         String str = (String) engineLogMap.get("perf");
         //转换成汉文加数字的字符串数组
-        final String[] strings = str.split("\n");
+        String[] strings = str.split("\n");
 
-        final StringBuilder temp = new StringBuilder();
+        StringBuilder temp = new StringBuilder();
         for (int i = 0; i < strings.length; i++) {
             // //转换成汉文和数字的俩个元素的字符串数组
-            final String[] s = strings[i].split("\t");
+            String[] s = strings[i].split("\t");
             if (i == 2 || i == 5) {
                 s[1] = BinaryConversion.getPrintSize(Long.parseLong(s[1]), true);
             } else {
@@ -284,8 +282,8 @@ public class BatchServerLogService {
      * @param batchServerLogVO
      * @return
      */
-    private String buildRetryLog(final String jobId, Integer pageInfo, final BatchServerLogVO batchServerLogVO) {
-        final Map<String, Object> retryParamsMap = Maps.newHashMap();
+    private String buildRetryLog(String jobId, Integer pageInfo, BatchServerLogVO batchServerLogVO) {
+        Map<String, Object> retryParamsMap = Maps.newHashMap();
         retryParamsMap.put("jobId", jobId);
         retryParamsMap.put("computeType", ComputeType.BATCH.getType());
         //先获取engine的日志总数信息
@@ -348,19 +346,19 @@ public class BatchServerLogService {
     /**
      * 解析增量同步信息
      */
-    private void parseIncreInfo(final JSONObject info, final String job, final Long tenantId, final String jobId, final long startTime, final long endTime, final String taskParams) {
+    private void parseIncreInfo(JSONObject info, String job, Long tenantId, String jobId, long startTime, long endTime, String taskParams) {
         if (StringUtils.isEmpty(jobId)) {
             return;
         }
         try {
-            final EDeployMode deployModeEnum = TaskParamsUtils.parseDeployTypeByTaskParams(taskParams,ComputeType.BATCH.getType());
+            EDeployMode deployModeEnum = TaskParamsUtils.parseDeployTypeByTaskParams(taskParams,ComputeType.BATCH.getType());
             JSONObject flinkJsonObject = Engine2DTOService.getComponentConfig(tenantId, EComponentType.FLINK);
-            final String prometheusHost = flinkJsonObject.getJSONObject(deployModeEnum.name()).getString("prometheusHost");
-            final String prometheusPort = flinkJsonObject.getJSONObject(deployModeEnum.name()).getString("prometheusPort");
+            String prometheusHost = flinkJsonObject.getJSONObject(deployModeEnum.name()).getString("prometheusHost");
+            String prometheusPort = flinkJsonObject.getJSONObject(deployModeEnum.name()).getString("prometheusPort");
             //prometheus的配置信息 从控制台获取
-            final PrometheusMetricQuery prometheusMetricQuery = new PrometheusMetricQuery(String.format("%s:%s", prometheusHost, prometheusPort));
-            final IMetric startLocationMetric = MetricBuilder.buildMetric("startLocation", jobId, startTime, endTime, prometheusMetricQuery);
-            final IMetric endLocationMetric = MetricBuilder.buildMetric("endLocation", jobId, startTime, endTime, prometheusMetricQuery);
+            PrometheusMetricQuery prometheusMetricQuery = new PrometheusMetricQuery(String.format("%s:%s", prometheusHost, prometheusPort));
+            IMetric startLocationMetric = MetricBuilder.buildMetric("startLocation", jobId, startTime, endTime, prometheusMetricQuery);
+            IMetric endLocationMetric = MetricBuilder.buildMetric("endLocation", jobId, startTime, endTime, prometheusMetricQuery);
             String startLocation = null;
             String endLocation = null;
             if (startLocationMetric != null) {
@@ -373,11 +371,11 @@ public class BatchServerLogService {
             if (StringUtils.isBlank(job)) {
                 return;
             }
-            final JSONObject jobJson = JSON.parseObject(job);
-            final String increColumn = (String) JSONPath.eval(jobJson, "$.job.content[0].reader.parameter.increColumn");
+            JSONObject jobJson = JSON.parseObject(job);
+            String increColumn = (String) JSONPath.eval(jobJson, "$.job.content[0].reader.parameter.increColumn");
 
-            final String table = (String) JSONPath.eval(jobJson, "$.job.content[0].reader.parameter.connection[0].table[0]");
-            final StringBuilder increStrBuild = new StringBuilder();
+            String table = (String) JSONPath.eval(jobJson, "$.job.content[0].reader.parameter.connection[0].table[0]");
+            StringBuilder increStrBuild = new StringBuilder();
             increStrBuild.append("数据表:  \t").append(table).append("\n");
             increStrBuild.append("增量标识:\t").append(increColumn).append("\n");
 
@@ -389,12 +387,12 @@ public class BatchServerLogService {
 
             boolean isDateCol = false;
 
-            final JSONArray columns = (JSONArray) JSONPath.eval(jobJson, "$.job.content[0].reader.parameter.column");
-            for (final Object column : columns) {
+            JSONArray columns = (JSONArray) JSONPath.eval(jobJson, "$.job.content[0].reader.parameter.column");
+            for (Object column : columns) {
                 if (column instanceof JSONObject) {
-                    final String name = ((JSONObject) column).getString("name");
+                    String name = ((JSONObject) column).getString("name");
                     if (name != null && name.equals(increColumn)) {
-                        final String type = ((JSONObject) column).getString("type");
+                        String type = ((JSONObject) column).getString("type");
                         Boolean typeCheck = type != null && (type.matches("(?i)date|datetime|time") || type.toLowerCase().contains("timestamp"));
                         if (typeCheck) {
                             isDateCol = true;
@@ -408,8 +406,8 @@ public class BatchServerLogService {
             }
 
             if (isDateCol) {
-                startLocation = this.formatLongStr(startLocation);
-                endLocation = this.formatLongStr(endLocation);
+                startLocation = formatLongStr(startLocation);
+                endLocation = formatLongStr(endLocation);
             }
 
             increStrBuild.append("开始位置:\t").append(startLocation).append("\n");
@@ -420,7 +418,7 @@ public class BatchServerLogService {
         }
     }
 
-    private String formatLongStr(final String longStr) {
+    private String formatLongStr(String longStr) {
         if (StringUtils.isEmpty(longStr)) {
             return "";
         }
@@ -432,12 +430,12 @@ public class BatchServerLogService {
             return longStr;
         }
 
-        final long time = Long.parseLong(longStr);
+        long time = Long.parseLong(longStr);
 
-        final Timestamp ts = new Timestamp(this.getMillis(time));
-        ts.setNanos(this.getNanos(time));
+        Timestamp ts = new Timestamp(getMillis(time));
+        ts.setNanos(getNanos(time));
 
-        return this.getNanosTimeStr(ts.toString());
+        return getNanosTimeStr(ts.toString());
     }
 
     private String getNanosTimeStr(String timeStr) {
@@ -448,9 +446,9 @@ public class BatchServerLogService {
         return timeStr;
     }
 
-    private int getNanos(final long startLocation) {
-        final String timeStr = String.valueOf(startLocation);
-        final int nanos;
+    private int getNanos(long startLocation) {
+        String timeStr = String.valueOf(startLocation);
+        int nanos;
         if (timeStr.length() == BatchServerLogService.SECOND_LENGTH) {
             nanos = 0;
         } else if (timeStr.length() == BatchServerLogService.MILLIS_LENGTH) {
@@ -466,9 +464,9 @@ public class BatchServerLogService {
         return nanos;
     }
 
-    private long getMillis(final long startLocation) {
-        final String timeStr = String.valueOf(startLocation);
-        final long millisSecond;
+    private long getMillis(long startLocation) {
+        String timeStr = String.valueOf(startLocation);
+        long millisSecond;
         if (timeStr.length() == BatchServerLogService.SECOND_LENGTH) {
             millisSecond = startLocation * 1000;
         } else if (timeStr.length() == BatchServerLogService.MILLIS_LENGTH) {
@@ -484,24 +482,24 @@ public class BatchServerLogService {
         return millisSecond;
     }
 
-    public BatchServerLogVO.SyncJobInfo parseExecLog(final String perf, final Long execTime) {
+    public BatchServerLogVO.SyncJobInfo parseExecLog(String perf, Long execTime) {
         if (Strings.isNullOrEmpty(perf)) {
             return new BatchServerLogVO.SyncJobInfo();
         }
 
-        final String[] arr = perf.split("\\n");
-        final BatchServerLogVO.SyncJobInfo syncJobInfo = new BatchServerLogVO.SyncJobInfo();
+        String[] arr = perf.split("\\n");
+        BatchServerLogVO.SyncJobInfo syncJobInfo = new BatchServerLogVO.SyncJobInfo();
         Integer readNum = 0;
         Integer errorNum = 0;
         Integer writeNum = 0;
 
-        for (final String tmp : arr) {
+        for (String tmp : arr) {
             if (tmp.contains("读取记录数:")) {
-                readNum = this.parseNumFromLog(tmp);
+                readNum = parseNumFromLog(tmp);
             } else if (tmp.contains("错误记录数:")) {
-                errorNum = this.parseNumFromLog(tmp);
+                errorNum = parseNumFromLog(tmp);
             } else if (tmp.contains("写入记录数:")) {
-                writeNum = this.parseNumFromLog(tmp);
+                writeNum = parseNumFromLog(tmp);
             }
         }
 
@@ -520,18 +518,18 @@ public class BatchServerLogService {
         return syncJobInfo;
     }
 
-    private Integer parseNumFromLog(final String tmp) {
+    private Integer parseNumFromLog(String tmp) {
         return MathUtil.getIntegerVal(tmp.split("\t")[1].trim().replace(",", ""));
     }
 
-    private void formatForLogInfo(final JSONObject jobInfo, final Integer jobType, final Integer taskType, final String retryLog, final Timestamp startTime,
-                                  final Timestamp endTime, final Long execTime, final BatchServerLogVO batchServerLogVO, final Long tenantId, final String jobId) {
+    private void formatForLogInfo(JSONObject jobInfo, Integer jobType, Integer taskType, String retryLog, Timestamp startTime,
+                                  Timestamp endTime, Long execTime, BatchServerLogVO batchServerLogVO, Long tenantId, String jobId) {
         if (!taskType.equals(EScheduleJobType.SYNC.getVal())) {
             if (jobInfo.containsKey("engineLogErr")) {
                 // 有这个字段表示日志没有获取到，目前engine端只对flink任务做了这种处理，这里先提前加上
                 jobInfo.put("msg_info", jobInfo.getString("engineLogErr"));
             } else {
-                final String msgInfo = Optional.ofNullable(jobInfo.getString("msg_info")).orElse("");
+                String msgInfo = Optional.ofNullable(jobInfo.getString("msg_info")).orElse("");
                 jobInfo.put("msg_info", msgInfo + "\n" + retryLog);
             }
 
@@ -539,22 +537,22 @@ public class BatchServerLogService {
             return;
         }
 
-        this.formatForSyncLogInfo(jobInfo, jobType,retryLog, startTime, endTime, execTime, batchServerLogVO, tenantId,jobId);
+        formatForSyncLogInfo(jobInfo, jobType,retryLog, startTime, endTime, execTime, batchServerLogVO, tenantId,jobId);
     }
 
-    private void formatForSyncLogInfo(final JSONObject jobInfo, final Integer jobType, final String retryLog, final Timestamp startTime,
-                                      final Timestamp endTime, final Long execTime, final BatchServerLogVO batchServerLogVO, final Long tenantId, final String jobId) {
+    private void formatForSyncLogInfo(JSONObject jobInfo, Integer jobType, String retryLog, Timestamp startTime,
+                                      Timestamp endTime, Long execTime, BatchServerLogVO batchServerLogVO, Long tenantId, String jobId) {
 
         try {
-            final Map<String, Object> sqlInfoMap = (Map<String, Object>) BatchServerLogService.objectMapper.readValue(jobInfo.getString("sql"), Object.class);
-            final JSONObject res = new JSONObject();
+            Map<String, Object> sqlInfoMap = (Map<String, Object>) BatchServerLogService.objectMapper.readValue(jobInfo.getString("sql"), Object.class);
+            JSONObject res = new JSONObject();
             res.put("job", sqlInfoMap.get("job"));
             res.put("parser", sqlInfoMap.get("parser"));
             res.put("createModel", sqlInfoMap.get("createModel"));
 
-            final Map<String, Object> jobInfoMap = (Map<String, Object>) BatchServerLogService.objectMapper.readValue(jobInfo.toString(), Object.class);
+            Map<String, Object> jobInfoMap = (Map<String, Object>) BatchServerLogService.objectMapper.readValue(jobInfo.toString(), Object.class);
 
-            final JSONObject logInfoJson = new JSONObject();
+            JSONObject logInfoJson = new JSONObject();
             logInfoJson.put("jobid", jobInfoMap.get("jobid"));
             logInfoJson.put("msg_info", jobInfoMap.get("msg_info") + retryLog);
             logInfoJson.put("turncated", jobInfoMap.get("turncated"));
@@ -563,11 +561,11 @@ public class BatchServerLogService {
             }
 
             String perfLogInfo = jobInfoMap.getOrDefault("perf", StringUtils.EMPTY).toString();
-            final boolean parsePerfLog = startTime != null && endTime != null
-                    && jobInfoMap.get("jobid") != null && this.environmentContext.getSyncLogPromethues();
+            boolean parsePerfLog = startTime != null && endTime != null
+                    && jobInfoMap.get("jobid") != null && environmentContext.getSyncLogPromethues();
 
             if (parsePerfLog) {
-                perfLogInfo = this.formatPerfLogInfo(jobInfoMap.get("jobid").toString(),jobId, startTime.getTime(), endTime.getTime(), tenantId);
+                perfLogInfo = formatPerfLogInfo(jobInfoMap.get("jobid").toString(),jobId, startTime.getTime(), endTime.getTime(), tenantId);
             }
 
             logInfoJson.put("perf", perfLogInfo);
@@ -602,18 +600,18 @@ public class BatchServerLogService {
             batchServerLogVO.setLogInfo(logInfoJson.toString());
 
             //解析出数据同步的信息
-            final BatchServerLogVO.SyncJobInfo syncJobInfo = this.parseExecLog(perfLogInfo, execTime);
+            BatchServerLogVO.SyncJobInfo syncJobInfo = parseExecLog(perfLogInfo, execTime);
             batchServerLogVO.setSyncJobInfo(syncJobInfo);
-        } catch (final Exception e) {
+        } catch (Exception e) {
             LOGGER.error("logInfo 解析失败", e);
             batchServerLogVO.setLogInfo(jobInfo.toString());
         }
     }
 
 
-    public String formatPerfLogInfo(final String engineJobId, final String jobId, final long startTime, final long endTime, final Long tenantId) {
+    public String formatPerfLogInfo(String engineJobId, String jobId, long startTime, long endTime, Long tenantId) {
 
-        final ScheduleJob job = scheduleJobService.getByJobId(jobId);
+        ScheduleJob job = scheduleJobService.getByJobId(jobId);
         if (Objects.isNull(job)) {
             LOGGER.info("can not find job by id:{}.", jobId);
             throw new RdosDefineException(ErrorCode.CAN_NOT_FIND_JOB);
@@ -623,45 +621,44 @@ public class BatchServerLogService {
         }
         BatchTask batchTaskById = batchTaskService.getBatchTaskById(job.getTaskId());
         //prometheus的配置信息 从控制台获取
-        final Pair<String, String> prometheusHostAndPort = this.getPrometheusHostAndPort(tenantId,batchTaskById.getTaskParams());
+        Pair<String, String> prometheusHostAndPort = getPrometheusHostAndPort(tenantId,batchTaskById.getTaskParams());
         if (prometheusHostAndPort == null){
             return "promethues配置为空";
         }
-        final PrometheusMetricQuery prometheusMetricQuery = new PrometheusMetricQuery(String.format("%s:%s", prometheusHostAndPort.getKey(), prometheusHostAndPort.getValue()));
+        PrometheusMetricQuery prometheusMetricQuery = new PrometheusMetricQuery(String.format("%s:%s", prometheusHostAndPort.getKey(), prometheusHostAndPort.getValue()));
 
         //之后查询是可以直接获取最后一条记录的方法
         //防止数据同步执行时间太长 查询prometheus的时候返回exceeded maximum resolution of 11,000 points per timeseries
-        final long maxGapTime = 60 * 1000 * 60 * (long)8;
+        long maxGapTime = 60 * 1000 * 60 * (long)8;
         long gapStartTime = startTime;
         if (endTime - startTime >= maxGapTime) {
             //超过11,000 points 查询1小时间隔内
             gapStartTime = endTime - 60 * 1000 * 60;
         }
 
-        final IMetric numReadMetric = MetricBuilder.buildMetric("numRead", engineJobId, gapStartTime, endTime, prometheusMetricQuery);
-        final IMetric byteReadMetric = MetricBuilder.buildMetric("byteRead", engineJobId, gapStartTime, endTime, prometheusMetricQuery);
-        final IMetric readDurationMetric = MetricBuilder.buildMetric("readDuration", engineJobId, gapStartTime, endTime, prometheusMetricQuery);
-        final IMetric numWriteMetric = MetricBuilder.buildMetric("numWrite", engineJobId, gapStartTime, endTime, prometheusMetricQuery);
-        final IMetric byteWriteMetric = MetricBuilder.buildMetric("byteWrite", engineJobId, gapStartTime, endTime, prometheusMetricQuery);
-        final IMetric writeDurationMetric = MetricBuilder.buildMetric("writeDuration", engineJobId, gapStartTime, endTime, prometheusMetricQuery);
-        final IMetric numErrorMetric = MetricBuilder.buildMetric("nErrors", engineJobId, gapStartTime, endTime, prometheusMetricQuery);
-        final SyncStatusLogInfoVO formatPerfLogInfo = this.getFormatPerfLogInfo(numReadMetric, byteReadMetric, readDurationMetric, numWriteMetric, byteWriteMetric, writeDurationMetric, numErrorMetric);
+        IMetric numReadMetric = MetricBuilder.buildMetric("numRead", engineJobId, gapStartTime, endTime, prometheusMetricQuery);
+        IMetric byteReadMetric = MetricBuilder.buildMetric("byteRead", engineJobId, gapStartTime, endTime, prometheusMetricQuery);
+        IMetric readDurationMetric = MetricBuilder.buildMetric("readDuration", engineJobId, gapStartTime, endTime, prometheusMetricQuery);
+        IMetric numWriteMetric = MetricBuilder.buildMetric("numWrite", engineJobId, gapStartTime, endTime, prometheusMetricQuery);
+        IMetric byteWriteMetric = MetricBuilder.buildMetric("byteWrite", engineJobId, gapStartTime, endTime, prometheusMetricQuery);
+        IMetric writeDurationMetric = MetricBuilder.buildMetric("writeDuration", engineJobId, gapStartTime, endTime, prometheusMetricQuery);
+        IMetric numErrorMetric = MetricBuilder.buildMetric("nErrors", engineJobId, gapStartTime, endTime, prometheusMetricQuery);
+        SyncStatusLogInfoVO formatPerfLogInfo = getFormatPerfLogInfo(numReadMetric, byteReadMetric, readDurationMetric, numWriteMetric, byteWriteMetric, writeDurationMetric, numErrorMetric);
         return formatPerfLogInfo.buildReadableLog();
     }
 
-    private Pair<String,String> getPrometheusHostAndPort(final Long tenantId, final String taskParams){
+    private Pair<String, String> getPrometheusHostAndPort(Long tenantId, String taskParams) {
         Boolean hasStandAlone = clusterService.hasStandalone(tenantId, EComponentType.FLINK.getTypeCode());
-        JSONObject flinkJsonObject ;
+        JSONObject flinkJsonObject;
         if (hasStandAlone) {
             flinkJsonObject = clusterService.getConfigByKey(tenantId, EComponentType.FLINK.getConfName(), null);
-        }else {
-
+        } else {
             JSONObject jsonObject = Engine2DTOService.getComponentConfig(tenantId, EComponentType.FLINK);
             if (null == jsonObject) {
                 LOGGER.info("console tenantId {} pluginInfo is null", tenantId);
                 return null;
             }
-            EDeployMode deployModeEnum = TaskParamsUtils.parseDeployTypeByTaskParams(taskParams,ComputeType.BATCH.getType());
+            EDeployMode deployModeEnum = TaskParamsUtils.parseDeployTypeByTaskParams(taskParams, ComputeType.BATCH.getType());
             flinkJsonObject = jsonObject.getJSONObject(deployModeEnum.name().toLowerCase(Locale.ROOT));
         }
         String prometheusHost = flinkJsonObject.getString("prometheusHost");
@@ -670,31 +667,30 @@ public class BatchServerLogService {
             LOGGER.info("prometheus http info is blank prometheusHost：{} prometheusPort：{}", prometheusHost, prometheusPort);
             return null;
         }
-        return new Pair<>(prometheusHost,prometheusPort);
+        return new Pair<>(prometheusHost, prometheusPort);
     }
 
-
-    private SyncStatusLogInfoVO getFormatPerfLogInfo(final IMetric numReadMetric, final IMetric byteReadMetric, final IMetric readDurationMetric,
-                                                     final IMetric numWriteMetric, final IMetric byteWriteMetric, final IMetric writeDurationMetric,
-                                                     final IMetric numErrorMetric){
-        final SyncStatusLogInfoVO logInfoVO = new SyncStatusLogInfoVO();
+    private SyncStatusLogInfoVO getFormatPerfLogInfo(IMetric numReadMetric, IMetric byteReadMetric, IMetric readDurationMetric,
+                                                     IMetric numWriteMetric, IMetric byteWriteMetric, IMetric writeDurationMetric,
+                                                     IMetric numErrorMetric){
+        SyncStatusLogInfoVO logInfoVO = new SyncStatusLogInfoVO();
         if (numReadMetric != null){
-            logInfoVO.setNumRead(this.getLongValue(numReadMetric.getMetric()));
+            logInfoVO.setNumRead(getLongValue(numReadMetric.getMetric()));
         }
         if (byteReadMetric != null){
-            logInfoVO.setByteRead(this.getLongValue(byteReadMetric.getMetric()));
+            logInfoVO.setByteRead(getLongValue(byteReadMetric.getMetric()));
         }
         if (readDurationMetric != null){
-            logInfoVO.setReadDuration(this.getLongValue(readDurationMetric.getMetric()));
+            logInfoVO.setReadDuration(getLongValue(readDurationMetric.getMetric()));
         }
         if (numWriteMetric != null){
-            logInfoVO.setNumWrite(this.getLongValue(numWriteMetric.getMetric()));
+            logInfoVO.setNumWrite(getLongValue(numWriteMetric.getMetric()));
         }
         if (byteWriteMetric != null){
-            logInfoVO.setByteWrite(this.getLongValue(byteWriteMetric.getMetric()));
+            logInfoVO.setByteWrite(getLongValue(byteWriteMetric.getMetric()));
         }
         if (writeDurationMetric != null){
-            logInfoVO.setWriteDuration(this.getLongValue(writeDurationMetric.getMetric()));
+            logInfoVO.setWriteDuration(getLongValue(writeDurationMetric.getMetric()));
         }
         if (numErrorMetric != null){
             logInfoVO.setnErrors(getLongValue(numErrorMetric.getMetric()));
@@ -703,35 +699,34 @@ public class BatchServerLogService {
     }
 
 
-    private long getLongValue(final Object obj) {
+    private long getLongValue(Object obj) {
         if (obj == null) {
             return 0L;
         }
-
-        return Long.valueOf(obj.toString());
+        return Long.parseLong(obj.toString());
     }
 
 
-    public JSONObject getLogsByAppId(Long tenantId, Integer taskType, String jobId, Long projectId) {
+    public JSONObject getLogsByAppId(Long tenantId, Integer taskType, String jobId) {
         if (EScheduleJobType.SYNC.getVal().equals(taskType)
                 || EScheduleJobType.VIRTUAL.getVal().equals(taskType)
                 || EScheduleJobType.WORK_FLOW.getVal().equals(taskType)) {
             throw new RdosDefineException("数据同步、虚节点、工作流的任务日志不支持下载");
         }
-        final JSONObject result = new JSONObject(YarnAppLogType.values().length);
-        for (final YarnAppLogType type : YarnAppLogType.values()) {
-            final String msg = this.batchDownloadService.downloadAppTypeLog(tenantId, jobId, 100,
+        JSONObject result = new JSONObject(YarnAppLogType.values().length);
+        for (YarnAppLogType type : YarnAppLogType.values()) {
+            String msg = batchDownloadService.downloadAppTypeLog(tenantId, jobId, 100,
                     type.name().toUpperCase(), taskType);
-            final JSONObject typeLog = new JSONObject(2);
+            JSONObject typeLog = new JSONObject();
             typeLog.put("msg", msg);
-            typeLog.put("download", String.format(BatchServerLogService.DOWNLOAD_TYPE_LOG, jobId, type.name().toUpperCase(),projectId));
+            typeLog.put("download", String.format(BatchServerLogService.DOWNLOAD_TYPE_LOG, jobId, type.name().toUpperCase()));
             result.put(type.name(), typeLog);
         }
 
         return result;
     }
 
-    public BatchServerLogByAppLogTypeResultVO getLogsByAppLogType(Long tenantId, Integer taskType, String jobId, String logType, Long projectId) {
+    public BatchServerLogByAppLogTypeResultVO getLogsByAppLogType(Long tenantId, Integer taskType, String jobId, String logType) {
         if (EScheduleJobType.SYNC.getVal().equals(taskType)
                 || EScheduleJobType.VIRTUAL.getVal().equals(taskType)
                 || EScheduleJobType.WORK_FLOW.getVal().equals(taskType)) {
@@ -742,11 +737,11 @@ public class BatchServerLogService {
             throw new RdosDefineException("not support the logType:" + logType);
         }
 
-        final String msg = this.batchDownloadService.downloadAppTypeLog(tenantId, jobId, 100,
+        String msg = batchDownloadService.downloadAppTypeLog(tenantId, jobId, 100,
                 logType.toUpperCase(), taskType);
         BatchServerLogByAppLogTypeResultVO resultVO = new BatchServerLogByAppLogTypeResultVO();
         resultVO.setMsg(msg);
-        resultVO.setDownload(String.format(BatchServerLogService.DOWNLOAD_TYPE_LOG, jobId, logType,projectId));
+        resultVO.setDownload(String.format(BatchServerLogService.DOWNLOAD_TYPE_LOG, jobId, logType));
 
         return resultVO;
     }

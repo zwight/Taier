@@ -24,7 +24,6 @@ import java.util.List;
  * @author jiangbo
  */
 public class TableDTO {
-    private Long projectId;
     private Long tenantId;
     private Long userId;
     private String tableName;
@@ -45,14 +44,6 @@ public class TableDTO {
 
     public void setTableId(Long tableId) {
         this.tableId = tableId;
-    }
-
-    public Long getProjectId() {
-        return projectId;
-    }
-
-    public void setProjectId(Long projectId) {
-        this.projectId = projectId;
     }
 
     public Long getTenantId() {
@@ -154,11 +145,19 @@ public class TableDTO {
     @Override
     public String toString() {
         return "TableDTO{" +
-                "projectId=" + projectId +
-                ", tenantId=" + tenantId +
+                "tenantId=" + tenantId +
                 ", userId=" + userId +
                 ", tableName='" + tableName + '\'' +
                 ", tableDesc='" + tableDesc + '\'' +
+                ", columns=" + columns +
+                ", addColumns=" + addColumns +
+                ", partitionKeys=" + partitionKeys +
+                ", delim='" + delim + '\'' +
+                ", location='" + location + '\'' +
+                ", lifeDay=" + lifeDay +
+                ", catalogueId=" + catalogueId +
+                ", storedType='" + storedType + '\'' +
+                ", tableId=" + tableId +
                 '}';
     }
 }

@@ -24,14 +24,6 @@ import io.swagger.annotations.ApiModelProperty;
 
 @ApiModel("数据源表字段信息")
 public class BatchDataSourceTableColumnVO extends DtInsightAuthParam {
-    @ApiModelProperty(value = "用户id", hidden = true)
-    private Long userId;
-
-    @ApiModelProperty(value = "租户id", hidden = true)
-    private Long tenantId;
-
-    @ApiModelProperty(value = "项目id", hidden = true)
-    private Long projectId;
 
     @ApiModelProperty(value = "数据源id", example = "1", required = true)
     private Long sourceId;
@@ -44,34 +36,6 @@ public class BatchDataSourceTableColumnVO extends DtInsightAuthParam {
 
     @ApiModelProperty(value = "查询的schema", example = "test", required = true)
     private String schema;
-
-    @Override
-    public Long getUserId() {
-        return userId;
-    }
-
-    @Override
-    public void setUserId(Long userId) {
-        this.userId = userId;
-    }
-
-    @Override
-    public Long getTenantId() {
-        return tenantId;
-    }
-
-    @Override
-    public void setTenantId(Long tenantId) {
-        this.tenantId = tenantId;
-    }
-
-    public Long getProjectId() {
-        return projectId;
-    }
-
-    public void setProjectId(Long projectId) {
-        this.projectId = projectId;
-    }
 
     public Long getSourceId() {
         return sourceId;

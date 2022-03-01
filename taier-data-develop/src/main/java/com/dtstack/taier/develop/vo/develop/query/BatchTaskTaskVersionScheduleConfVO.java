@@ -22,9 +22,6 @@ import com.dtstack.taier.common.param.DtInsightAuthParam;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
-/**
- * @author zhaozhangwan
- */
 @ApiModel("任务信息")
 public class BatchTaskTaskVersionScheduleConfVO extends DtInsightAuthParam {
 

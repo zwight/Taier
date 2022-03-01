@@ -58,17 +58,6 @@ public class DevelopTaskController {
         }.execute();
     }
 
-    @PostMapping(value = "checkIsLoop")
-    @ApiOperation("检查task与依赖的task是否有构成有向环")
-    public R<BatchTaskResultVO> checkIsLoop(@RequestBody BatchTaskCheckIsLoopVO infoVO) {
-        return new APITemplate<BatchTaskResultVO>() {
-            @Override
-            protected BatchTaskResultVO process() {
-                return TaskMapstructTransfer.INSTANCE.BatchTaskToResultVO(batchTaskService.checkIsLoop(infoVO.getTaskId(), infoVO.getDependencyTaskId()));
-            }
-        }.execute();
-    }
-
     @PostMapping(value = "publishTask")
     @ApiOperation("任务发布")
     public R<BatchTaskPublishTaskResultVO> publishTask(@RequestBody BatchTaskPublishTaskVO detailVO) {
@@ -76,7 +65,7 @@ public class DevelopTaskController {
             @Override
             protected BatchTaskPublishTaskResultVO process() {
                 return TaskMapstructTransfer.INSTANCE.TaskCheckResultVOToBatchTaskPublishTaskResultVO(batchTaskService.publishTask(detailVO.getTenantId(),
-                        detailVO.getId(), detailVO.getUserId(), detailVO.getPublishDesc(), detailVO.getIsRoot(), detailVO.getIgnoreCheck()));
+                        detailVO.getId(), detailVO.getUserId(), detailVO.getPublishDesc()));
             }
         }.execute();
     }
@@ -181,7 +170,7 @@ public class DevelopTaskController {
         return new APITemplate<Void>() {
             @Override
             protected Void process() {
-                batchTaskService.checkName(detailVO.getName(), detailVO.getType(), detailVO.getPid(), detailVO.getIsFile(),  detailVO.getProjectId());
+                batchTaskService.checkName(detailVO.getName(), detailVO.getType(), detailVO.getPid(), detailVO.getIsFile(), detailVO.getTenantId());
                 return null;
             }
         }.execute();
@@ -193,7 +182,7 @@ public class DevelopTaskController {
         return new APITemplate<BatchTaskResultVO>() {
             @Override
             protected BatchTaskResultVO process() {
-                return TaskMapstructTransfer.INSTANCE.BatchTaskToResultVO(batchTaskService.getByName(detailVO.getName(), detailVO.getProjectId()));
+                return TaskMapstructTransfer.INSTANCE.BatchTaskToResultVO(batchTaskService.getByName(detailVO.getName(), detailVO.getTenantId()));
             }
         }.execute();
     }

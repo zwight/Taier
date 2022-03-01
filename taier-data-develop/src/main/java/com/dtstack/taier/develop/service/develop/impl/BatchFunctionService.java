@@ -139,7 +139,6 @@ public class BatchFunctionService {
         return vo;
     }
 
-
     /**
      * 添加函数
      */
@@ -148,11 +147,11 @@ public class BatchFunctionService {
         if (!PublicUtil.matcher(batchFunction.getName(), PatternConstant.FUNCTION_PATTERN)) {
             throw new RdosDefineException("注意名称只允许存在字母、数字、下划线、横线，hive函数不支持大写字母", ErrorCode.NAME_FORMAT_ERROR);
         }
-        if (resourceId == null) {
+        if (Objects.isNull(resourceId)) {
             throw new RdosDefineException("新增函数必须添加资源", ErrorCode.INVALID_PARAMETERS);
-        } else {
-            checkResourceType(resourceId);
         }
+        checkResourceType(resourceId);
+
         try {
 			// id小于0走新增逻辑
 			if (Objects.isNull(batchFunction.getId()) || batchFunction.getId() < 1) {
@@ -179,12 +178,7 @@ public class BatchFunctionService {
 			return taskCatalogueVO;
 		} catch (Exception e) {
             LOGGER.error("addFunction, functions={},resource={},tenantId={}", JSONObject.toJSONString(batchFunction), resourceId, tenantId);
-            LOGGER.error(e.getMessage(), e);
-            if (e instanceof RdosDefineException) {
-                throw e;
-            } else {
-                throw new RdosDefineException(String.format("添加函数失败：%s", e.getMessage()));
-            }
+            throw new RdosDefineException(String.format("添加函数失败：%s", e.getMessage()), e);
 		}
     }
 
@@ -203,9 +197,8 @@ public class BatchFunctionService {
         BatchFunctionResource resourceFunctionByFunctionId = getResourceFunctionByFunctionId(function.getId());
         if (Objects.isNull(resourceFunctionByFunctionId)) {
             batchFunctionResourceService.insert(batchFunctionResource);
-        }else {
-            batchFunctionResourceService.updateByFunctionId(batchFunctionResource);
         }
+        batchFunctionResourceService.updateByFunctionId(batchFunctionResource);
     }
 
     /**
@@ -287,7 +280,6 @@ public class BatchFunctionService {
         batchFunction.setModifyUserId(userId);
         addOrUpdate(batchFunction);
     }
-
 
     /**
      * 获取任务类型的所有函数

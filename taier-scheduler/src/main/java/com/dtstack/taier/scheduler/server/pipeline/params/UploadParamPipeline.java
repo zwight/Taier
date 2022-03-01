@@ -80,21 +80,20 @@ public class UploadParamPipeline extends IPipeline.AbstractPipeline {
         @SuppressWarnings("unchecked")
         List<ScheduleTaskParamShade> taskParamShades = (List) pipelineParam.get(taskParamsToReplaceKey);
 
-        String uploadPath = this.uploadSqlTextToHdfs((String)actionParam.get("sqlText"), taskShade.getTaskType(),
-                taskShade.getName(), taskShade.getTenantId(),0L, taskParamShades, scheduleJob.getCycTime(),
+        String uploadPath = uploadSqlTextToHdfs((String)actionParam.get("sqlText"), taskShade.getTaskType(),
+                taskShade.getName(), taskShade.getTenantId(),taskParamShades, scheduleJob.getCycTime(),
                 fileUploadPath, pluginInfo, workerOperator, scheduleJob.getJobId());
 
         pipelineParam.put(pipelineKey, uploadPath);
     }
 
 
-    private String uploadSqlTextToHdfs(String content, Integer taskType, String taskName, Long tenantId, Long projectId,
+    private String uploadSqlTextToHdfs(String content, Integer taskType, String taskName, Long tenantId,
                                        List<ScheduleTaskParamShade> taskParamShades, String cycTime, String fileUploadPath,
                                        JSONObject pluginInfo, WorkerOperator workerOperator, String jobId) throws RdosDefineException {
         String fileName = null;
         if (taskType.equals(EScheduleJobType.SHELL.getVal())) {
-            fileName = String.format("shell_%s_%s_%s_%s.sh", tenantId, projectId,
-                    taskName, System.currentTimeMillis());
+            fileName = String.format("shell_%s_%s_%s.sh", tenantId, taskName, System.currentTimeMillis());
         } else {
             throw new RdosDefineException("not support upload file taskType " + taskType);
         }

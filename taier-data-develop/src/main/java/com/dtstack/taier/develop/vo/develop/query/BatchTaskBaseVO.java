@@ -36,9 +36,6 @@ public class BatchTaskBaseVO extends DtInsightAuthParam {
     @ApiModelProperty(value = "计算类型 0实时，1 离线", example = "1", required = true)
     private Integer computeType;
 
-    @ApiModelProperty(value = "执行引擎类型 0 flink, 1 spark", example = "0", required = true)
-    private Integer engineType;
-
     @ApiModelProperty(value = "sql 文本", example = "shwo tables;", required = true)
     private String sqlText;
 
@@ -90,12 +87,6 @@ public class BatchTaskBaseVO extends DtInsightAuthParam {
     @ApiModelProperty(value = "是否过期", example = "0")
     private Integer isExpire;
 
-    @ApiModelProperty(value = "租户 ID", hidden = true)
-    private Long tenantId;
-
-    @ApiModelProperty(value = "项目 ID", hidden = true)
-    private Long projectId;
-
     @ApiModelProperty(value = "平台类别", example = "1")
     private Integer appType;
 
@@ -133,14 +124,6 @@ public class BatchTaskBaseVO extends DtInsightAuthParam {
 
     public void setComputeType(Integer computeType) {
         this.computeType = computeType;
-    }
-
-    public Integer getEngineType() {
-        return engineType;
-    }
-
-    public void setEngineType(Integer engineType) {
-        this.engineType = engineType;
     }
 
     public String getSqlText() {
@@ -277,24 +260,6 @@ public class BatchTaskBaseVO extends DtInsightAuthParam {
 
     public void setIsExpire(Integer isExpire) {
         this.isExpire = isExpire;
-    }
-
-    @Override
-    public Long getTenantId() {
-        return tenantId;
-    }
-
-    @Override
-    public void setTenantId(Long tenantId) {
-        this.tenantId = tenantId;
-    }
-
-    public Long getProjectId() {
-        return projectId;
-    }
-
-    public void setProjectId(Long projectId) {
-        this.projectId = projectId;
     }
 
     public Integer getAppType() {

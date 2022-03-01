@@ -25,31 +25,11 @@ import io.swagger.annotations.ApiModelProperty;
 @ApiModel("任务信息")
 public class BatchTaskPublishTaskVO extends DtInsightAuthParam {
 
-    @ApiModelProperty(value = "项目 ID", hidden = true)
-    private Long projectId;
-
     @ApiModelProperty(value = "任务 ID", example = "1", required = true)
     private Long id;
 
-    @ApiModelProperty(value = "用户 ID", hidden = true)
-    private Long userId;
-
     @ApiModelProperty(value = "发布备注", example = "test", required = true)
     private String publishDesc;
-
-    @ApiModelProperty(value = "是否root用户", hidden = true)
-    private Boolean isRoot;
-
-    @ApiModelProperty(value = "忽略检查", example = "true", required = true)
-    private Boolean ignoreCheck;
-
-    public Long getProjectId() {
-        return projectId;
-    }
-
-    public void setProjectId(Long projectId) {
-        this.projectId = projectId;
-    }
 
     public Long getId() {
         return id;
@@ -59,37 +39,11 @@ public class BatchTaskPublishTaskVO extends DtInsightAuthParam {
         this.id = id;
     }
 
-    @Override
-    public Long getUserId() {
-        return userId;
-    }
-
-    @Override
-    public void setUserId(Long userId) {
-        this.userId = userId;
-    }
-
     public String getPublishDesc() {
         return publishDesc;
     }
 
     public void setPublishDesc(String publishDesc) {
         this.publishDesc = publishDesc;
-    }
-
-    public Boolean getIsRoot() {
-        return isRoot;
-    }
-
-    public void setIsRoot(Boolean root) {
-        isRoot = root;
-    }
-
-    public Boolean getIgnoreCheck() {
-        return ignoreCheck;
-    }
-
-    public void setIgnoreCheck(Boolean ignoreCheck) {
-        this.ignoreCheck = ignoreCheck;
     }
 }

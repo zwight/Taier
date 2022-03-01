@@ -50,9 +50,6 @@ public class BatchCatalogueUpdateVO extends DtInsightAuthParam {
     @ApiModelProperty(value = "创建用户", example = "5")
     private Long createUserId;
 
-    @ApiModelProperty(value = "engine类型", example = "1")
-    private Integer engineType;
-
     @ApiModelProperty(value = "节点值", example = "1")
     private Integer orderVal;
 
@@ -140,14 +137,6 @@ public class BatchCatalogueUpdateVO extends DtInsightAuthParam {
 
     public void setCreateUserId(Long createUserId) {
         this.createUserId = createUserId;
-    }
-
-    public Integer getEngineType() {
-        return engineType;
-    }
-
-    public void setEngineType(Integer engineType) {
-        this.engineType = engineType;
     }
 
     public Integer getOrderVal() {

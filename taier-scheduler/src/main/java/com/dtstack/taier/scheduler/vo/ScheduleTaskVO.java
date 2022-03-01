@@ -40,9 +40,7 @@ public class ScheduleTaskVO extends ScheduleTaskShade {
     protected String taskPeriodType;
     private String nodePName;
     private Long userId;
-    private Integer lockVersion;
     private List<Map> taskVariables;
-    private boolean forceUpdate;
 
     private Long dataSourceId;
 
@@ -72,12 +70,6 @@ public class ScheduleTaskVO extends ScheduleTaskShade {
      */
     @ApiModelProperty(notes = "2-python2.x,3-python3.x")
     private int pythonVersion;
-
-    /**
-     * 0-TensorFlow,1-MXNet
-     */
-    @ApiModelProperty(notes = "0-TensorFlow,1-MXNet")
-    private int learningType;
 
     /**
      * 输入数据文件的路径
@@ -128,10 +120,6 @@ public class ScheduleTaskVO extends ScheduleTaskShade {
     private Long nodePid;
 
     private String taskParams;
-
-    public boolean isForceUpdate() {
-        return forceUpdate;
-    }
 
     public boolean isCurrentProject() {
         return currentProject;
@@ -213,14 +201,6 @@ public class ScheduleTaskVO extends ScheduleTaskShade {
         this.pythonVersion = pythonVersion;
     }
 
-    public int getLearningType() {
-        return learningType;
-    }
-
-    public void setLearningType(int learningType) {
-        this.learningType = learningType;
-    }
-
     public String getInput() {
         return input;
     }
@@ -243,14 +223,6 @@ public class ScheduleTaskVO extends ScheduleTaskShade {
 
     public void setOptions(String options) {
         this.options = options;
-    }
-
-    public boolean getforceUpdate() {
-        return forceUpdate;
-    }
-
-    public void setForceUpdate(boolean forceUpdate) {
-        this.forceUpdate = forceUpdate;
     }
 
     public Integer getTaskPeriodId() {
@@ -308,14 +280,6 @@ public class ScheduleTaskVO extends ScheduleTaskShade {
 
     public void setModifyUser(UserDTO modifyUser) {
         this.modifyUser = modifyUser;
-    }
-
-    public Integer getLockVersion() {
-        return lockVersion;
-    }
-
-    public void setLockVersion(Integer lockVersion) {
-        this.lockVersion = lockVersion;
     }
 
     public Long getUserId() {
