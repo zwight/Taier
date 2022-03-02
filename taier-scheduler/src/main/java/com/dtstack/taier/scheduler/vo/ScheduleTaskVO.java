@@ -51,8 +51,6 @@ public class ScheduleTaskVO extends ScheduleTaskShade {
 
     private String tenantName;
 
-    private String projectAlias;
-
     /**
      * 0-向导模式，1-脚本模式
      */
@@ -360,14 +358,6 @@ public class ScheduleTaskVO extends ScheduleTaskShade {
 
     public void setExistsOnRule(Boolean existsOnRule) {
         this.existsOnRule = existsOnRule;
-    }
-
-    public String getProjectAlias() {
-        return projectAlias;
-    }
-
-    public void setProjectAlias(String projectAlias) {
-        this.projectAlias = projectAlias;
     }
 
     public String getMainClass() {

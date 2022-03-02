@@ -56,9 +56,6 @@ public class TaskCatalogueResultVO{
     @ApiModelProperty(value = "目录名称", example = "name")
     private String name;
 
-    @ApiModelProperty(value = "项目别名", example = "project_alia")
-    private String projectAlias;
-
     @ApiModelProperty(value = "目录层级", example = "1")
     private Integer level;
 
@@ -173,14 +170,6 @@ public class TaskCatalogueResultVO{
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public String getProjectAlias() {
-        return projectAlias;
-    }
-
-    public void setProjectAlias(String projectAlias) {
-        this.projectAlias = projectAlias;
     }
 
     public Integer getLevel() {

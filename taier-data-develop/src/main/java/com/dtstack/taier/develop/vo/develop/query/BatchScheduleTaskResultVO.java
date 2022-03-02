@@ -193,9 +193,6 @@ public class BatchScheduleTaskResultVO {
     @ApiModelProperty(value = "是否存在开启的质量任务")
     private Boolean existsOnRule;
 
-    @ApiModelProperty(value = "项目别名", example = "dev")
-    private String projectAlias;
-
     public BatchUserResultVO getCreateUser() {
         return createUser;
     }
@@ -636,11 +633,4 @@ public class BatchScheduleTaskResultVO {
         this.existsOnRule = existsOnRule;
     }
 
-    public String getProjectAlias() {
-        return projectAlias;
-    }
-
-    public void setProjectAlias(String projectAlias) {
-        this.projectAlias = projectAlias;
-    }
 }
