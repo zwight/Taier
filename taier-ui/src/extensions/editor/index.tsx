@@ -17,9 +17,11 @@
  */
 
 import { message, Modal, Tag } from 'antd';
-import { UploadOutlined, LoginOutlined } from '@ant-design/icons';
+import { UploadOutlined, LoginOutlined, SwapOutlined, ImportOutlined,
+	BugOutlined, FontColorsOutlined, ConsoleSqlOutlined
+} from '@ant-design/icons';
 import molecule from '@dtinsight/molecule';
-import type { IExtension } from '@dtinsight/molecule/esm/model';
+import type { IEditorActionsProps, IExtension } from '@dtinsight/molecule/esm/model';
 import { resetEditorGroup } from '@/utils/extensions';
 import {
 	TASK_RUN_ID,
@@ -29,6 +31,12 @@ import {
 	OUTPUT_LOG,
 	TASK_SAVE_ID,
 	DRAWER_MENU_ENUM,
+	TASK_CONVERT_SCRIPT,
+	DATA_SYNC_TYPE,
+	TASK_DEBUG_ID,
+	TASK_IMPORT_ID,
+	TASK_CHECK_ID,
+	TASK_INTRODUCE_ID,
 } from '@/constant';
 import { history } from 'umi';
 import { cloneDeep, debounce } from 'lodash';
@@ -46,52 +54,115 @@ import executeService from '@/services/executeService';
 import type { IParamsProps } from '@/services/taskParamsService';
 import taskParamsService from '@/services/taskParamsService';
 import { generateRqtBody } from '@/components/dataSync';
+import { saveTask } from '@/components/streamCollection/streamAction';
 
 const { confirm } = Modal;
 
 function initActions() {
 	const { builtInEditorInitialActions } = molecule.builtin.getModules();
 
+	const { current } = molecule.editor.getState();
+	const currentTabData: (CatalogueDataProps & IOfflineTaskProps & { value?: string }) | undefined = current?.tab?.data;
+
+	const save: IEditorActionsProps = {
+		id: TASK_SAVE_ID,
+		name: 'Save Task',
+		icon: 'save',
+		place: 'outer',
+		disabled: true,
+		title: '保存',
+	};
+	const run: IEditorActionsProps = {
+		id: TASK_RUN_ID,
+		name: 'Run Task',
+		icon: 'play',
+		place: 'outer',
+		disabled: true,
+		title: '运行',
+	};
+	const stop: IEditorActionsProps = {
+		id: TASK_STOP_ID,
+		name: 'Stop Task',
+		icon: 'debug-pause',
+		place: 'outer',
+		disabled: true,
+		title: '停止运行',
+	};
+	const submit: IEditorActionsProps = {
+		id: TASK_SUBMIT_ID,
+		name: '提交至调度',
+		icon: <UploadOutlined />,
+		place: 'outer',
+		disabled: true,
+		title: '提交至调度',
+	};
+	const ops: IEditorActionsProps = {
+		id: TASK_OPS_ID,
+		name: '运维',
+		title: '运维',
+		icon: <LoginOutlined />,
+		place: 'outer',
+	};
+	const convertScript: IEditorActionsProps = {
+		id: TASK_CONVERT_SCRIPT,
+		name: '转换为脚本',
+		icon: <SwapOutlined />,
+		place: 'outer',
+		title: '转换为脚本',
+	};
+	const taskImport: IEditorActionsProps = {
+		id: TASK_IMPORT_ID,
+		name: '导入',
+		icon: <ImportOutlined />,
+		place: 'outer',
+		title: '倒入',
+	};
+	const debug: IEditorActionsProps = {
+		id: TASK_DEBUG_ID,
+		name: '调试',
+		icon: <BugOutlined />,
+		place: 'outer',
+		title: '调试',
+	};
+	const check: IEditorActionsProps = {
+		id: TASK_CHECK_ID,
+		name: '语法检查',
+		icon: <FontColorsOutlined />,
+		place: 'outer',
+		title: '语法检查',
+	};
+	const introduce: IEditorActionsProps = {
+		id: TASK_INTRODUCE_ID,
+		name: '引入数据源',
+		icon: <ImportOutlined />,
+		place: 'outer',
+		title: '引入数据源',
+	};
+	let actions: IEditorActionsProps[] = []
+
+	switch (currentTabData?.taskType) {
+		case TASK_TYPE_ENUM.DATA_COLLECTION:
+			if (currentTabData.createModel === DATA_SYNC_TYPE.GUIDE) {
+				actions = [save, convertScript, submit, ops]
+			} else {
+				actions = [save, taskImport, submit, ops]
+			}
+			break;
+		case TASK_TYPE_ENUM.FLINKSQL:
+			if (currentTabData.createModel === DATA_SYNC_TYPE.GUIDE) {
+				actions = [save, debug, convertScript, check, introduce, submit, ops]
+			} else {
+				actions = [save, check, submit, ops]
+			}
+			break;
+		case TASK_TYPE_ENUM.SYNC:
+		default:
+			actions = [save, run, stop, submit, ops]
+			break;
+	}
+
 	molecule.editor.setDefaultActions([
-		{
-			id: TASK_SAVE_ID,
-			name: 'Save Task',
-			icon: 'save',
-			place: 'outer',
-			disabled: true,
-			title: '保存',
-		},
-		{
-			id: TASK_RUN_ID,
-			name: 'Run Task',
-			icon: 'play',
-			place: 'outer',
-			disabled: true,
-			title: '运行',
-		},
-		{
-			id: TASK_STOP_ID,
-			name: 'Stop Task',
-			icon: 'debug-pause',
-			place: 'outer',
-			disabled: true,
-			title: '停止运行',
-		},
-		{
-			id: TASK_SUBMIT_ID,
-			name: '提交至调度',
-			icon: <UploadOutlined />,
-			place: 'outer',
-			disabled: true,
-			title: '提交至调度',
-		},
-		{
-			id: TASK_OPS_ID,
-			name: '运维',
-			title: '运维',
-			icon: <LoginOutlined />,
-			place: 'outer',
-		},
+		...actions,
 		...builtInEditorInitialActions,
 	]);
 }
@@ -266,118 +337,122 @@ function emitEvent() {
 				break;
 			}
 			case TASK_SAVE_ID: {
-				const params = {
-					...generateRqtBody(),
-					sqlText: current.tab?.data.value,
-					// taskVos pass through by dependencyTasks
-					dependencyTasks: current.tab?.data.taskVOS,
-				};
-				const uploadTask = () => {
-					const { id } = params;
-					api.getOfflineTaskByID({ id }).then((res) => {
-						const { success, data } = res;
-						if (success) {
-							molecule.folderTree.update({
-								id,
-								data,
-							});
-							molecule.editor.updateActions([
-								{
-									id: TASK_SAVE_ID,
-									disabled: false,
-								},
-								{
-									id: TASK_RUN_ID,
-									icon: 'play',
-									disabled: false,
-								},
-								{
-									id: TASK_STOP_ID,
-									disabled: true,
-								},
-								{
-									id: TASK_SUBMIT_ID,
-									disabled: false,
-								},
-							]);
+				if (current.tab?.data.taskType === TASK_TYPE_ENUM.DATA_COLLECTION || current.tab?.data.taskType === TASK_TYPE_ENUM.FLINKSQL) {
+					saveTask()
+				} else {
+					const params = {
+						...generateRqtBody(),
+						sqlText: current.tab?.data.value,
+						// taskVos pass through by dependencyTasks
+						dependencyTasks: current.tab?.data.taskVOS,
+					};
+					const uploadTask = () => {
+						const { id } = params;
+						api.getOfflineTaskByID({ id }).then((res) => {
+							const { success, data } = res;
+							if (success) {
+								molecule.folderTree.update({
+									id,
+									data,
+								});
+								molecule.editor.updateActions([
+									{
+										id: TASK_SAVE_ID,
+										disabled: false,
+									},
+									{
+										id: TASK_RUN_ID,
+										icon: 'play',
+										disabled: false,
+									},
+									{
+										id: TASK_STOP_ID,
+										disabled: true,
+									},
+									{
+										id: TASK_SUBMIT_ID,
+										disabled: false,
+									},
+								]);
+							}
+						});
+					};
+					const succCallback = (res: any) => {
+						if (res.code === 1) {
+							const fileData = res.data;
+							const lockInfo = fileData.readWriteLockVO;
+							const lockStatus = lockInfo?.result; // 1-正常，2-被锁定，3-需同步
+							if (lockStatus === 0) {
+								message.success('保存成功！');
+								uploadTask();
+								// 如果是锁定状态，点击确定按钮，强制更新，否则，取消保存
+							} else if (lockStatus === 1) {
+								// 2-被锁定
+								confirm({
+									title: '锁定提醒', // 锁定提示
+									content: (
+										<span>
+											文件正在被
+											{lockInfo.lastKeepLockUserName}
+											编辑中，开始编辑时间为
+											{formatDateTime(lockInfo.gmtModified)}。 强制保存可能导致
+											{lockInfo.lastKeepLockUserName}
+											对文件的修改无法正常保存！
+										</span>
+									),
+									okText: '确定保存',
+									okType: 'danger',
+									cancelText: '取消',
+									onOk() {
+										const succCall = (successRes: any) => {
+											if (successRes.code === 1) {
+												message.success('保存成功！');
+												uploadTask();
+											}
+										};
+										api.forceUpdateOfflineTask(params).then(succCall);
+									},
+								});
+								// 如果同步状态，则提示会覆盖代码，
+								// 点击确认，重新拉取代码并覆盖当前代码，取消则退出
+							} else if (lockStatus === 2) {
+								// 2-需同步
+								confirm({
+									title: '保存警告',
+									content: (
+										<span>
+											文件已经被
+											{lockInfo.lastKeepLockUserName}
+											编辑过，编辑时间为
+											{formatDateTime(lockInfo.gmtModified)}。 点击确认按钮会
+											<Tag color="orange">覆盖</Tag>
+											您本地的代码，请您提前做好备份！
+										</span>
+									),
+									okText: '确定覆盖',
+									okType: 'danger',
+									cancelText: '取消',
+									onOk() {
+										const reqParams: any = {
+											id: params.id,
+											lockVersion: lockInfo.version,
+										};
+										// 更新version, getLock信息
+										api.getOfflineTaskDetail(reqParams).then((detailRes) => {
+											if (detailRes.code === 1) {
+												const taskInfo = detailRes.data;
+												taskInfo.merged = true;
+												uploadTask();
+											}
+										});
+									},
+								});
+							}
+							return res;
 						}
-					});
-				};
-				const succCallback = (res: any) => {
-					if (res.code === 1) {
-						const fileData = res.data;
-						const lockInfo = fileData.readWriteLockVO;
-						const lockStatus = lockInfo?.result; // 1-正常，2-被锁定，3-需同步
-						if (lockStatus === 0) {
-							message.success('保存成功！');
-							uploadTask();
-							// 如果是锁定状态，点击确定按钮，强制更新，否则，取消保存
-						} else if (lockStatus === 1) {
-							// 2-被锁定
-							confirm({
-								title: '锁定提醒', // 锁定提示
-								content: (
-									<span>
-										文件正在被
-										{lockInfo.lastKeepLockUserName}
-										编辑中，开始编辑时间为
-										{formatDateTime(lockInfo.gmtModified)}。 强制保存可能导致
-										{lockInfo.lastKeepLockUserName}
-										对文件的修改无法正常保存！
-									</span>
-								),
-								okText: '确定保存',
-								okType: 'danger',
-								cancelText: '取消',
-								onOk() {
-									const succCall = (successRes: any) => {
-										if (successRes.code === 1) {
-											message.success('保存成功！');
-											uploadTask();
-										}
-									};
-									api.forceUpdateOfflineTask(params).then(succCall);
-								},
-							});
-							// 如果同步状态，则提示会覆盖代码，
-							// 点击确认，重新拉取代码并覆盖当前代码，取消则退出
-						} else if (lockStatus === 2) {
-							// 2-需同步
-							confirm({
-								title: '保存警告',
-								content: (
-									<span>
-										文件已经被
-										{lockInfo.lastKeepLockUserName}
-										编辑过，编辑时间为
-										{formatDateTime(lockInfo.gmtModified)}。 点击确认按钮会
-										<Tag color="orange">覆盖</Tag>
-										您本地的代码，请您提前做好备份！
-									</span>
-								),
-								okText: '确定覆盖',
-								okType: 'danger',
-								cancelText: '取消',
-								onOk() {
-									const reqParams: any = {
-										id: params.id,
-										lockVersion: lockInfo.version,
-									};
-									// 更新version, getLock信息
-									api.getOfflineTaskDetail(reqParams).then((detailRes) => {
-										if (detailRes.code === 1) {
-											const taskInfo = detailRes.data;
-											taskInfo.merged = true;
-											uploadTask();
-										}
-									});
-								},
-							});
-						}
-						return res;
-					}
-				};
-				api.saveOfflineJobData(params).then(succCallback);
+					};
+					api.saveOfflineJobData(params).then(succCallback);
+				}
 				break;
 			}
 			case TASK_SUBMIT_ID: {

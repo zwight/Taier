@@ -17,13 +17,14 @@
  */
 
 import { useLayoutEffect, useState } from 'react';
-import { Button, Input, Select, Form } from 'antd';
+import { Button, Input, Select, Form, Modal } from 'antd';
 import molecule from '@dtinsight/molecule/esm';
 import { Scrollable } from '@dtinsight/molecule/esm/components';
 import FolderPicker from '../../components/folderPicker';
-import { CATELOGUE_TYPE, formItemLayout, tailFormItemLayout, TASK_TYPE_ENUM } from '@/constant';
+import { CATELOGUE_TYPE, FLINK_VERSIONS, FLINK_VERSION_TYPE, formItemLayout, tailFormItemLayout, TASK_TYPE_ENUM } from '@/constant';
 import type { CatalogueDataProps } from '@/interface';
 import { connect } from '@dtinsight/molecule/esm/react';
+import { getFlinkVersion } from '../streamCollection/rightBar/panelData';
 
 const { Option } = Select;
 const FormItem = Form.Item;
@@ -45,6 +46,14 @@ const TASK_TYPE_OPTIONS = [
 		value: TASK_TYPE_ENUM.SYNC,
 		text: '数据同步',
 	},
+	{
+		value: TASK_TYPE_ENUM.DATA_COLLECTION,
+		text: '实时采集',
+	},
+	{
+		value: TASK_TYPE_ENUM.FLINKSQL,
+		text: 'FlinkSql',
+	},
 ];
 
 interface IFormFieldProps {
@@ -52,11 +61,13 @@ interface IFormFieldProps {
 	taskType: TASK_TYPE_ENUM;
 	nodePid: number;
 	taskDesc: string;
+	componentVersion: string;
 }
 
 export default connect(molecule.editor, ({ onSubmit, record, current }: OpenProps) => {
 	const [form] = Form.useForm<IFormFieldProps>();
 	const [loading, setLoading] = useState(false);
+	const [flinkVersions, setFlinkVersions] = useState<string[]>([])
 
 	const handleSubmit = (values: IFormFieldProps) => {
 		setLoading(true);
@@ -64,6 +75,11 @@ export default connect(molecule.editor, ({ onSubmit, record, current }: OpenProp
 			setLoading(success);
 		});
 	};
+
+	const getFlinkVersions = async () => {
+		const list: string[] = await getFlinkVersion();
+		setFlinkVersions(list);
+	}
 
 	const handleValuesChanged = (_: Partial<IFormFieldProps>, values: IFormFieldProps) => {
 		if (current?.tab) {
@@ -75,6 +91,15 @@ export default connect(molecule.editor, ({ onSubmit, record, current }: OpenProp
 			});
 		}
 	};
+	const confirmFlink = () => {
+        Modal.confirm({
+            title: '正在切换引擎版本',
+            content: <><span style={{ color: 'red' }}>切换引擎版本后将重置环境参数</span>，请确认是否继续？</>,
+            onCancel: () => {
+                form.resetFields(['componentVersion'])
+            }
+        })
+    }
 
 	useLayoutEffect(() => {
 		if (current?.tab) {
@@ -84,8 +109,10 @@ export default connect(molecule.editor, ({ onSubmit, record, current }: OpenProp
 				taskType: data.taskType,
 				nodePid: data.nodePid?.toString().split('-')[0],
 				taskDesc: data.taskDesc,
+				componentVersion: data.componentVersion || FLINK_VERSIONS.FLINK_1_12
 			});
 		}
+		getFlinkVersions()
 	}, []);
 
 	return (
@@ -137,6 +164,18 @@ export default connect(molecule.editor, ({ onSubmit, record, current }: OpenProp
 						))}
 					</Select>
 				</FormItem>
+				{ (form.getFieldValue('taskType') === TASK_TYPE_ENUM.FLINKSQL
+					|| form.getFieldValue('taskType') === TASK_TYPE_ENUM.DATA_COLLECTION) && <FormItem
+					{...formItemLayout}
+					label="引擎版本"
+					name="componentVersion"
+				>
+					<Select onChange={confirmFlink}>
+						{FLINK_VERSION_TYPE.map(({ value, label }) =>
+							<Option key={value} value={value} disabled={!flinkVersions.includes(value)}>{label}</Option>
+						)}
+					</Select>
+				</FormItem>}
 				<FormItem
 					{...formItemLayout}
 					label="存储位置"

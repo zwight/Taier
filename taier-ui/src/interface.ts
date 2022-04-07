@@ -128,6 +128,7 @@ export interface IResourceProps {
  * 离线任务类型
  */
 export interface IOfflineTaskProps {
+	createModel: number;
 	createUserId: number;
 	cron: string;
 	currentProject: boolean;
